@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/main.css">
+    <title>Site Settings</title>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container-fluid">
+            <span class="navbar-brand">Event Manager</span>
+            <a href="/organiser/logout" class="btn btn-secondary btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-7 offset-md-2">
+                <h1>Site Settings</h1>
+
+                <% if (error) { %>
+                    <div class="form-error-box" role="alert">
+                        <%= error %>
+                    </div>
+                <% } %>
+
+                <div class="card-custom">
+                    <form method="POST" action="/organiser/settings">
+                        <div class="mb-4">
+                            <label for="site_name" class="form-label">Site Name</label>
+                            <input type="text" class="form-control" id="site_name" name="site_name" value="<%= site_name %>" required>
+                            <small class="text-muted">The name of your event management site</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="site_description" class="form-label">Site Description</label>
+                            <textarea class="form-control" id="site_description" name="site_description" rows="4" required><%= site_description %></textarea>
+                            <small class="text-muted">A brief description shown to visitors</small>
+                        </div>
+
+                        <div class="btn-group-inline">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="/organiser" class="btn btn-secondary">Back to Home</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/main.css">
+    <title>Edit Event</title>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container-fluid">
+            <span class="navbar-brand">Event Manager</span>
+            <a href="/organiser/logout" class="btn btn-secondary btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <h1>Edit Event</h1>
+                <p class="text-muted">
+                    Created: <%= new Date(event.created_at).toLocaleDateString() %>
+                </p>
+
+                <%
+                    const fullTicket = ticketTypes.find(t => t.type === 'full');
+                    const fullQty = fullTicket ? fullTicket.quantity_total : 0;
+                    const fullPrice = fullTicket ? fullTicket.price : 0;
+
+                    const concessionTicket = ticketTypes.find(t => t.type === 'concession');
+                    const concessionQty = concessionTicket ? concessionTicket.quantity_total : 0;
+                    const concessionPrice = concessionTicket ? concessionTicket.price : 0;
+
+                    const eventDateTime = new Date(event.event_date);
+                    const eventDateTimeLocal = eventDateTime.toISOString().slice(0, 16);
+                %>
+
+                <div class="card-custom">
+                    <form method="POST" action="<%= `/organiser/event/${event.event_id}` %>">
+                        <!-- Event Details Section -->
+                        <h3>Event Details</h3>
+
+                        <div class="mb-4">
+                            <label for="title" class="form-label">Event Title</label>
+                            <input type="text" class="form-control" id="title" name="title" value="<%= event.title %>" required>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Event Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4"><%= event.description || '' %></textarea>
+                            <small class="text-muted">What is this event about?</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="event_date" class="form-label">Event Date & Time</label>
+                            <input type="datetime-local" class="form-control" id="event_date" name="event_date" value="<%= eventDateTimeLocal %>" required>
+                        </div>
+
+                        <!-- Full-Price Tickets Section -->
+                        <h3 style="margin-top: 2rem;">Full-Price Tickets</h3>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="full_qty" class="form-label">Quantity Available</label>
+                                <input type="number" class="form-control" id="full_qty" name="full_qty" value="<%= fullQty %>" min="0" required>
+                                <small class="text-muted">Total number of tickets</small>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="full_price" class="form-label">Price per Ticket</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">£</span>
+                                    <input type="number" class="form-control" id="full_price" name="full_price" value="<%= fullPrice %>" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Concession Tickets Section -->
+                        <h3 style="margin-top: 2rem;">Concession Tickets</h3>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="concession_qty" class="form-label">Quantity Available</label>
+                                <input type="number" class="form-control" id="concession_qty" name="concession_qty" value="<%= concessionQty %>" min="0" required>
+                                <small class="text-muted">Total number of tickets</small>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label for="concession_price" class="form-label">Price per Ticket</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">£</span>
+                                    <input type="number" class="form-control" id="concession_price" name="concession_price" value="<%= concessionPrice %>" min="0" step="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="btn-group-inline" style="margin-top: 2rem;">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="/organiser" class="btn btn-secondary">Back to Home</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

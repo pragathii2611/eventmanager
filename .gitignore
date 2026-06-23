@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+package-lock.json
+npm-debug.log
+
+# Database
+database.db
+database.db-wal
+database.db-shm
+
+# Environment
+.env
+.env.local
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log

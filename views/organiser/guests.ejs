@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/main.css">
+    <title>Guest List - <%= event.title %></title>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container-fluid">
+            <span class="navbar-brand">Event Manager</span>
+            <a href="/organiser/logout" class="btn btn-secondary btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <h1>Guest List</h1>
+                <h2><%= event.title %></h2>
+
+                <!-- Active Bookings Section -->
+                <div class="section">
+                    <h3 class="section-title">
+                        <span class="badge-status badge-active">Active</span>
+                        Bookings (<%= activeBookings.length %>)
+                    </h3>
+
+                    <% if (activeBookings && activeBookings.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Attendee</th>
+                                        <th>Ticket Type</th>
+                                        <th>Qty</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                        <th>Booked</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% activeBookings.forEach(booking => { %>
+                                        <tr>
+                                            <td><strong><%= booking.attendee_name %></strong></td>
+                                            <td><%= booking.ticket_type.charAt(0).toUpperCase() + booking.ticket_type.slice(1) %></td>
+                                            <td><%= booking.quantity %></td>
+                                            <td>£<%= booking.price.toFixed(2) %></td>
+                                            <td><strong>£<%= (booking.quantity * booking.price).toFixed(2) %></strong></td>
+                                            <td><small><%= new Date(booking.booked_at).toLocaleDateString() %></small></td>
+                                            <td>
+                                                <form method="POST" action="<%= `/organiser/booking/${booking.booking_id}/cancel` %>" style="display: inline;">
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Cancel this booking? Any waitlisted attendees will be promoted if tickets are now available.')">Cancel</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="empty-state">
+                            <p>No active bookings yet.</p>
+                            <p class="text-muted small">Bookings will appear here once attendees start booking tickets.</p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Cancelled Bookings Section -->
+                <% if (cancelledBookings && cancelledBookings.length > 0) { %>
+                    <div class="section">
+                        <h3 class="section-title">
+                            <span class="badge-status badge-cancelled">Cancelled</span>
+                            Bookings (<%= cancelledBookings.length %>)
+                        </h3>
+
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Attendee</th>
+                                        <th>Ticket Type</th>
+                                        <th>Qty</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                        <th>Booked</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% cancelledBookings.forEach(booking => { %>
+                                        <tr class="cancelled-item">
+                                            <td><%= booking.attendee_name %></td>
+                                            <td><%= booking.ticket_type.charAt(0).toUpperCase() + booking.ticket_type.slice(1) %></td>
+                                            <td><%= booking.quantity %></td>
+                                            <td>£<%= booking.price.toFixed(2) %></td>
+                                            <td>£<%= (booking.quantity * booking.price).toFixed(2) %></td>
+                                            <td><small><%= new Date(booking.booked_at).toLocaleDateString() %></small></td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="text-muted small mt-3">Cancelled bookings are archived for audit purposes.</p>
+                    </div>
+                <% } %>
+
+                <!-- Back Button -->
+                <div class="section mt-5">
+                    <a href="/organiser" class="btn btn-secondary">← Back to Events</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

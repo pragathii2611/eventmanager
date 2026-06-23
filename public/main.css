@@ -1,0 +1,639 @@
+/* ============================================================================
+   DESIGN TOKENS & COLOR SYSTEM
+   ============================================================================ */
+
+:root {
+  /* Color palette */
+  --color-bg: #FAF8F4;
+  --color-text: #2B2D2A;
+  --color-primary: #5C7A6B;
+  --color-primary-hover: #4A6657;
+  --color-border: #B8C4BC;
+  --color-danger: #C9743A;
+  --color-danger-hover: #B5632E;
+  --color-status-draft: #E8A33D;
+  --color-status-published: #5C7A6B;
+  --color-status-cancelled: #999999;
+
+  /* Shadows & radius */
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+  --shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --radius-card: 10px;
+  --radius-button: 6px;
+
+  /* Typography */
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* ============================================================================
+   GLOBAL STYLES
+   ============================================================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+  margin-bottom: 1.25rem;
+  margin-top: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+h4 {
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+/* ============================================================================
+   NAVBAR / HEADER
+   ============================================================================ */
+
+.navbar {
+  background: white;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  padding: 1rem 0;
+}
+
+.navbar-brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: var(--color-primary) !important;
+}
+
+/* ============================================================================
+   CARDS
+   ============================================================================ */
+
+.card-custom {
+  background: white;
+  border: none;
+  border-top: 3px solid var(--color-primary);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.card-custom:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.card {
+  background: white;
+  border: none;
+  border-top: 3px solid var(--color-primary);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.card-header {
+  background: white;
+  border-bottom: 1px solid var(--color-border);
+  padding: 1.5rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
+/* Primary button: Book, Publish, Save, Login, Create New Event */
+.btn-primary {
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-button);
+  color: white;
+  font-weight: 500;
+  padding: 0.6rem 1.5rem;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: var(--color-primary-hover);
+  color: white;
+  box-shadow: 0 0 0 0.2rem rgba(92, 122, 107, 0.25);
+}
+
+/* Secondary button: Back, Edit, outline style */
+.btn-secondary {
+  background-color: transparent;
+  border: 1px solid var(--color-text);
+  border-radius: var(--radius-button);
+  color: var(--color-text);
+  font-weight: 500;
+  padding: 0.6rem 1.5rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+  background-color: rgba(43, 45, 42, 0.05);
+  border-color: var(--color-text);
+  color: var(--color-text);
+}
+
+/* Destructive button: Delete, Cancel (booking) */
+.btn-danger {
+  background-color: var(--color-danger);
+  border: none;
+  border-radius: var(--radius-button);
+  color: white;
+  font-weight: 500;
+  padding: 0.6rem 1.5rem;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active {
+  background-color: var(--color-danger-hover);
+  color: white;
+  box-shadow: 0 0 0 0.2rem rgba(201, 116, 58, 0.25);
+}
+
+/* Info button: Share Link, Guest List */
+.btn-info {
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-button);
+  color: white;
+  font-weight: 500;
+  padding: 0.6rem 1.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-info:hover,
+.btn-info:focus {
+  background-color: var(--color-primary-hover);
+  color: white;
+}
+
+/* Warning button: Join Waitlist */
+.btn-warning {
+  background-color: var(--color-status-draft);
+  border: none;
+  border-radius: var(--radius-button);
+  color: white;
+  font-weight: 500;
+  padding: 0.6rem 1.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-warning:hover,
+.btn-warning:focus {
+  background-color: #D68C2A;
+  color: white;
+}
+
+/* Success button: Book Tickets */
+.btn-success {
+  background-color: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-button);
+  color: white;
+  font-weight: 500;
+  padding: 0.6rem 1.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-success:hover,
+.btn-success:focus {
+  background-color: var(--color-primary-hover);
+  color: white;
+}
+
+/* Button sizes */
+.btn-sm {
+  padding: 0.4rem 1rem;
+  font-size: 0.875rem;
+}
+
+.btn-lg {
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+  border-radius: var(--radius-button);
+}
+
+/* Button groups for inline buttons */
+.btn-group-inline {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ============================================================================
+   BADGES & STATUS INDICATORS
+   ============================================================================ */
+
+.badge-status {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.badge-draft {
+  background-color: var(--color-status-draft);
+  color: white;
+}
+
+.badge-published {
+  background-color: var(--color-status-published);
+  color: white;
+}
+
+.badge-cancelled {
+  background-color: var(--color-status-cancelled);
+  color: white;
+  text-decoration: line-through;
+}
+
+.badge-active {
+  background-color: var(--color-status-published);
+  color: white;
+}
+
+.badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-danger {
+  background-color: var(--color-danger);
+  color: white;
+}
+
+/* ============================================================================
+   FORMS & INPUTS
+   ============================================================================ */
+
+.form-control,
+.form-select {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-button);
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-body);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.2rem rgba(92, 122, 107, 0.1);
+  outline: none;
+}
+
+.form-label {
+  color: var(--color-text);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* Form validation error message */
+.form-error {
+  color: var(--color-danger);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.form-error-box {
+  background-color: #FFF5F0;
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-button);
+  color: var(--color-danger);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* ============================================================================
+   TABLES
+   ============================================================================ */
+
+.table {
+  margin-bottom: 1.5rem;
+}
+
+.table thead {
+  background-color: rgba(92, 122, 107, 0.05);
+  border-bottom: 2px solid var(--color-border);
+}
+
+.table th {
+  font-weight: 600;
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.table td {
+  border-color: var(--color-border);
+  vertical-align: middle;
+}
+
+.table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(250, 248, 244, 0.8);
+}
+
+/* ============================================================================
+   ALERTS & EMPTY STATES
+   ============================================================================ */
+
+.alert {
+  border-radius: var(--radius-button);
+  border: none;
+  padding: 1rem 1.25rem;
+}
+
+.alert-danger {
+  background-color: #FFF5F0;
+  color: var(--color-danger);
+}
+
+.alert-success {
+  background-color: #F0F9F6;
+  color: var(--color-status-published);
+}
+
+.alert-warning {
+  background-color: #FEF8F0;
+  color: #C9743A;
+}
+
+.alert-info {
+  background-color: #F5F9F8;
+  color: var(--color-primary);
+}
+
+/* Empty state message */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #999999;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin-bottom: 0;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* ============================================================================
+   LAYOUT & SPACING
+   ============================================================================ */
+
+.container-lg,
+.container {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.row {
+  margin-bottom: 1.5rem;
+}
+
+.section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
+.text-muted {
+  color: #999999 !important;
+}
+
+.text-danger {
+  color: var(--color-danger) !important;
+}
+
+.text-primary {
+  color: var(--color-primary) !important;
+}
+
+.text-success {
+  color: var(--color-status-published) !important;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-end {
+  text-align: right;
+}
+
+.mt-3 {
+  margin-top: 1rem;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem;
+}
+
+.mb-5 {
+  margin-bottom: 3rem;
+}
+
+.p-3 {
+  padding: 1rem;
+}
+
+.p-4 {
+  padding: 1.5rem;
+}
+
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 576px) {
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  .card-custom,
+  .card-body {
+    padding: 1rem;
+  }
+
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .btn-group-inline {
+    flex-direction: column;
+  }
+
+  .container-lg,
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .table {
+    font-size: 0.875rem;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+}
+
+/* ============================================================================
+   SPECIFIC COMPONENTS
+   ============================================================================ */
+
+/* List group items styled as cards */
+.list-group-item {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  padding: 1rem;
+  border-radius: var(--radius-button);
+  margin-bottom: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.list-group-item:hover {
+  background-color: rgba(92, 122, 107, 0.02);
+  border-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.list-group-item a {
+  text-decoration: none;
+  display: block;
+  color: inherit;
+}
+
+.list-group-item a:hover {
+  text-decoration: none;
+}
+
+/* Strikethrough for cancelled items */
+.cancelled-item {
+  opacity: 0.7;
+  text-decoration: line-through;
+}
+
+/* Availability indicator */
+.availability {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  background-color: rgba(92, 122, 107, 0.1);
+  border-radius: var(--radius-button);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.availability.limited {
+  background-color: rgba(232, 163, 61, 0.15);
+  color: var(--color-status-draft);
+}
+
+.availability.sold-out {
+  background-color: rgba(201, 116, 58, 0.15);
+  color: var(--color-danger);
+}
+
+/* Modal overlay */
+.modal-content {
+  border: none;
+  border-radius: var(--radius-card);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--color-border);
+  background-color: white;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--color-border);
+  background-color: white;
+}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/main.css">
+    <title><%= event.title %> - Booking</title>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container-fluid">
+            <span class="navbar-brand">Event Manager</span>
+            <a href="/attendee" class="btn btn-secondary btn-sm">← Back to Events</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <!-- Event Details -->
+                <div class="card-custom mb-5">
+                    <h1><%= event.title %></h1>
+                    <p><%= event.description %></p>
+                    <p class="text-muted">
+                        <strong>📅 <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %></strong>
+                        <strong>at <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %></strong>
+                    </p>
+                </div>
+
+                <!-- Booking Form -->
+                <div class="card-custom">
+                    <h2>Book Your Tickets</h2>
+
+                    <!-- BOOKING FORM -->
+                    <form method="POST" action="<%= `/attendee/event/${event.event_id}/book` %>">
+                        <!-- Attendee Name -->
+                        <div class="mb-4">
+                            <label for="attendee_name" class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="attendee_name" name="attendee_name" required autofocus>
+                        </div>
+
+                        <!-- Ticket Types -->
+                        <% if (ticketTypes && ticketTypes.length > 0) { %>
+                            <h3 style="margin-bottom: 1.5rem;">Select Tickets</h3>
+
+                            <% ticketTypes.forEach(ticket => { %>
+                                <% if (ticket.remaining > 0) { %>
+                                    <!-- Available Ticket Card -->
+                                    <div class="card-custom" style="border-left: 3px solid var(--color-status-published);">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h4><%= ticket.type.charAt(0).toUpperCase() + ticket.type.slice(1) %> Ticket</h4>
+                                                <p class="mb-2">
+                                                    <strong>£<%= ticket.price.toFixed(2) %> per ticket</strong>
+                                                </p>
+                                                <div class="availability">
+                                                    <span><%= ticket.remaining %> of <%= ticket.quantity_total %> remaining</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4 text-md-end">
+                                                <label for="qty_<%= ticket.ticket_type_id %>" class="form-label">How many?</label>
+                                                <select class="form-select" id="qty_<%= ticket.ticket_type_id %>" name="qty_<%= ticket.ticket_type_id %>">
+                                                    <option value="0">None</option>
+                                                    <% for (let i = 1; i <= Math.min(ticket.remaining, 10); i++) { %>
+                                                        <option value="<%= i %>"><%= i %> <%= i === 1 ? 'ticket' : 'tickets' %></option>
+                                                    <% } %>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% } else { %>
+                                    <!-- Sold Out Ticket Card (grayed out) -->
+                                    <div class="card-custom" style="border-left: 3px solid var(--color-status-cancelled); opacity: 0.6;">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h4><%= ticket.type.charAt(0).toUpperCase() + ticket.type.slice(1) %> Ticket</h4>
+                                                <p class="mb-2 text-danger"><strong>SOLD OUT</strong></p>
+                                                <p class="text-muted small">This ticket type is no longer available for booking.</p>
+                                            </div>
+
+                                            <div class="col-md-4 text-md-end">
+                                                <span class="badge badge-status badge-cancelled">Unavailable</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            <% }); %>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100" style="margin-top: 2rem;">Complete Booking</button>
+                        <% } else { %>
+                            <p class="text-muted">No ticket information available for this event.</p>
+                        <% } %>
+                    </form>
+
+                    <!-- WAITLIST FORM (shown only for sold-out ticket types) -->
+                    <%
+                        const soldOutTickets = ticketTypes ? ticketTypes.filter(t => t.remaining === 0) : [];
+                    %>
+
+                    <% if (soldOutTickets.length > 0) { %>
+                        <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--color-border);">
+                            <h3>💌 Join the Waitlist</h3>
+                            <p class="text-muted">This event is selling fast! Join the waitlist for sold-out tickets and we'll let you know if spaces open up.</p>
+
+                            <form method="POST" action="<%= `/attendee/event/${event.event_id}/waitlist` %>" style="margin-top: 1.5rem;">
+                                <div class="mb-4">
+                                    <label for="waitlist_name" class="form-label">Your Name</label>
+                                    <input type="text" class="form-control" id="waitlist_name" name="waitlist_name" required autofocus>
+                                </div>
+
+                                <% soldOutTickets.forEach(ticket => { %>
+                                    <div class="card-custom" style="border-left: 3px solid var(--color-status-draft); background-color: rgba(232, 163, 61, 0.03);">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h4><%= ticket.type.charAt(0).toUpperCase() + ticket.type.slice(1) %> Ticket</h4>
+                                                <p class="mb-2">
+                                                    <strong>£<%= ticket.price.toFixed(2) %> per ticket</strong>
+                                                </p>
+                                                <span class="badge badge-status badge-draft">Waitlist Available</span>
+                                            </div>
+
+                                            <div class="col-md-4 text-md-end">
+                                                <label for="waitlist_qty_<%= ticket.ticket_type_id %>" class="form-label">How many?</label>
+                                                <select class="form-select" id="waitlist_qty_<%= ticket.ticket_type_id %>" name="waitlist_qty_<%= ticket.ticket_type_id %>">
+                                                    <option value="0">Skip</option>
+                                                    <% for (let i = 1; i <= 10; i++) { %>
+                                                        <option value="<%= i %>"><%= i %> <%= i === 1 ? 'ticket' : 'tickets' %></option>
+                                                    <% } %>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }); %>
+
+                                <button type="submit" class="btn btn-warning btn-lg w-100" style="margin-top: 2rem;">Join Waitlist</button>
+                            </form>
+                        </div>
+                    <% } %>
+
+                    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--color-border);">
+                        <a href="/attendee" class="btn btn-secondary">← Back to Events</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
