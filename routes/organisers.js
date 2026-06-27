@@ -156,11 +156,16 @@ router.get('/', authRequired, (req, res, next) => {
                     return next(err);
                 }
 
+                // Get flash message if it exists
+                const flash = req.session.flash;
+                delete req.session.flash;
+
                 res.render('organiser/home', {
                     site_name: settings.site_name,
                     site_description: settings.site_description,
                     publishedEvents: publishedEvents,
-                    draftEvents: draftEvents
+                    draftEvents: draftEvents,
+                    flash: flash
                 });
             });
         });
@@ -220,6 +225,7 @@ router.post('/settings', authRequired, (req, res, next) => {
             return next(err);
         }
 
+        req.session.flash = { type: 'success', message: '✓ Site settings saved successfully!' };
         res.redirect('/organiser');
     });
 });
@@ -248,7 +254,25 @@ router.get('/event/new', authRequired, (req, res, next) => {
             return next(err);
         }
 
-        res.redirect(`/organiser/event/${this.lastID}`);
+        const eventId = this.lastID;
+
+        // Create default ticket types (full and concession) with 0 quantity/price
+        const createFullQuery = "INSERT INTO ticket_types (event_id, type, price, quantity_total) VALUES (?, 'full', 0, 0)";
+        const createConcessionQuery = "INSERT INTO ticket_types (event_id, type, price, quantity_total) VALUES (?, 'concession', 0, 0)";
+
+        global.db.run(createFullQuery, [eventId], function(err1) {
+            if (err1) {
+                return next(err1);
+            }
+
+            global.db.run(createConcessionQuery, [eventId], function(err2) {
+                if (err2) {
+                    return next(err2);
+                }
+
+                res.redirect(`/organiser/event/${eventId}`);
+            });
+        });
     });
 });
 
@@ -351,6 +375,7 @@ router.post('/event/:id', authRequired, (req, res, next) => {
                         return next(err);
                     }
 
+                    req.session.flash = { type: 'success', message: '✓ Event saved successfully!' };
                     res.redirect('/organiser');
                 });
             });
@@ -378,6 +403,7 @@ router.post('/event/:id/publish', authRequired, (req, res, next) => {
             return next(err);
         }
 
+        req.session.flash = { type: 'success', message: '✓ Event published successfully!' };
         res.redirect('/organiser');
     });
 });
@@ -399,9 +425,57 @@ router.post('/event/:id/delete', authRequired, (req, res, next) => {
             return next(err);
         }
 
+        req.session.flash = { type: 'success', message: '✓ Event deleted successfully.' };
         res.redirect('/organiser');
     });
 });
+
+// ============================================================================
+// DYNAMIC PRICING HELPER (shared with attendees.js)
+// ============================================================================
+
+/**
+ * calculateCurrentPrice(ticketTypeId, callback)
+ * Calculates the current tiered price for a ticket type based on % sold
+ */
+function calculateCurrentPrice(ticketTypeId, callback) {
+    const query = `
+        SELECT
+            t.price as base_price,
+            t.quantity_total,
+            COALESCE(SUM(CASE WHEN b.status = 'active' THEN b.quantity ELSE 0 END), 0) as sold,
+            t.quantity_total - COALESCE(SUM(CASE WHEN b.status = 'active' THEN b.quantity ELSE 0 END), 0) as remaining
+        FROM ticket_types t
+        LEFT JOIN bookings b ON t.ticket_type_id = b.ticket_type_id
+        WHERE t.ticket_type_id = ?
+        GROUP BY t.ticket_type_id
+    `;
+
+    global.db.get(query, [ticketTypeId], function(err, row) {
+        if (err) {
+            return callback(err, null);
+        }
+
+        if (!row) {
+            return callback(null, null);
+        }
+
+        if (row.remaining === 0) {
+            return callback(null, null);
+        }
+
+        const percentSold = (row.sold / row.quantity_total) * 100;
+        let multiplier = 1.0;
+        if (percentSold >= 80) {
+            multiplier = 1.3;
+        } else if (percentSold >= 50) {
+            multiplier = 1.15;
+        }
+
+        const tieredPrice = Math.round(row.base_price * multiplier * 100) / 100;
+        callback(null, tieredPrice);
+    });
+}
 
 // ============================================================================
 // GUEST LIST & BOOKING MANAGEMENT
@@ -437,7 +511,7 @@ router.get('/event/:id/guests', authRequired, (req, res, next) => {
                 b.booked_at,
                 b.status,
                 t.type as ticket_type,
-                t.price
+                b.price_paid
             FROM bookings b
             JOIN ticket_types t ON b.ticket_type_id = t.ticket_type_id
             WHERE b.event_id = ?
@@ -552,11 +626,11 @@ function promoteWaitlistForTicketType(ticketTypeId, callback) {
 
             const remaining = ticket.quantity_total - bookedRow.total_booked;
 
-            // Query 3: Get next waitlist entry (position 1)
+            // Query 3: Get next waitlist entry (position 1, waiting status only)
             const nextWaitlistQuery = `
                 SELECT waitlist_id, event_id, attendee_name, requested_quantity
                 FROM waitlist
-                WHERE ticket_type_id = ?
+                WHERE ticket_type_id = ? AND status = 'waiting'
                 ORDER BY position ASC
                 LIMIT 1
             `;
@@ -573,34 +647,43 @@ function promoteWaitlistForTicketType(ticketTypeId, callback) {
 
                 // Check if this person can be promoted
                 if (remaining >= waitlistEntry.requested_quantity) {
-                    // Can promote! Create a booking and remove from waitlist
-                    const createBookingQuery = `
-                        INSERT INTO bookings (event_id, ticket_type_id, attendee_name, quantity, booked_at, status)
-                        VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, 'active')
-                    `;
+                    // Can promote! Calculate tiered price at promotion time
+                    calculateCurrentPrice(ticketTypeId, function(priceErr, tieredPrice) {
+                        if (priceErr) {
+                            return callback(priceErr);
+                        }
 
-                    global.db.run(
-                        createBookingQuery,
-                        [waitlistEntry.event_id, ticketTypeId, waitlistEntry.attendee_name, waitlistEntry.requested_quantity],
-                        function(promoteErr) {
-                            if (promoteErr) {
-                                return callback(promoteErr);
-                            }
+                        const pricePaid = tieredPrice || 0;
 
-                            // Remove from waitlist
-                            const removeWaitlistQuery = "DELETE FROM waitlist WHERE waitlist_id = ?";
+                        // Create a booking with the current tiered price
+                        const createBookingQuery = `
+                            INSERT INTO bookings (event_id, ticket_type_id, attendee_name, quantity, price_paid, booked_at, status)
+                            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, 'active')
+                        `;
 
-                            global.db.run(removeWaitlistQuery, [waitlistEntry.waitlist_id], function(removeErr) {
-                                if (removeErr) {
-                                    return callback(removeErr);
+                        global.db.run(
+                            createBookingQuery,
+                            [waitlistEntry.event_id, ticketTypeId, waitlistEntry.attendee_name, waitlistEntry.requested_quantity, pricePaid],
+                            function(promoteErr) {
+                                if (promoteErr) {
+                                    return callback(promoteErr);
                                 }
 
-                                // Recursively try to promote the next person
-                                // (availability has now decreased by requested_quantity)
-                                promoteWaitlistForTicketType(ticketTypeId, callback);
-                            });
-                        }
-                    );
+                                // Update waitlist status to 'promoted' (soft-delete)
+                                const updateWaitlistQuery = "UPDATE waitlist SET status = 'promoted' WHERE waitlist_id = ?";
+
+                                global.db.run(updateWaitlistQuery, [waitlistEntry.waitlist_id], function(updateErr) {
+                                    if (updateErr) {
+                                        return callback(updateErr);
+                                    }
+
+                                    // Recursively try to promote the next person
+                                    // (availability has now decreased by requested_quantity)
+                                    promoteWaitlistForTicketType(ticketTypeId, callback);
+                                });
+                            }
+                        );
+                    });
                 } else {
                     // Can't promote this person; stop here
                     // They'll be promoted later when more tickets become available
@@ -610,5 +693,127 @@ function promoteWaitlistForTicketType(ticketTypeId, callback) {
         });
     });
 }
+
+// ============================================================================
+// ANALYTICS DASHBOARD
+// ============================================================================
+
+/**
+ * GET /organiser/analytics
+ * Display analytics dashboard with revenue, sales, and waitlist metrics
+ * All data from SQL aggregates, no client-side computation
+ */
+router.get('/analytics', authRequired, (req, res, next) => {
+    // Query 1: Total revenue across all events
+    const totalRevenueQuery = `
+        SELECT
+            COALESCE(SUM(CASE WHEN b.status = 'active' THEN b.quantity * b.price_paid ELSE 0 END), 0) as total_revenue,
+            COALESCE(SUM(CASE WHEN b.status = 'active' THEN b.quantity ELSE 0 END), 0) as total_tickets_sold
+        FROM bookings b
+    `;
+
+    global.db.get(totalRevenueQuery, function(err, totalData) {
+        if (err) {
+            return next(err);
+        }
+
+        // Query 2: Revenue per event
+        const revenuePerEventQuery = `
+            SELECT
+                e.event_id,
+                e.title,
+                COALESCE(SUM(CASE WHEN b.status = 'active' THEN b.quantity * b.price_paid ELSE 0 END), 0) as event_revenue,
+                COALESCE(SUM(CASE WHEN b.status = 'active' THEN b.quantity ELSE 0 END), 0) as tickets_sold
+            FROM events e
+            LEFT JOIN bookings b ON e.event_id = b.event_id
+            GROUP BY e.event_id
+            ORDER BY event_revenue DESC
+        `;
+
+        global.db.all(revenuePerEventQuery, function(err, eventRevenues) {
+            if (err) {
+                return next(err);
+            }
+
+            // Query 3: Tickets sold per ticket type per event
+            const ticketsPerTypeQuery = `
+                SELECT
+                    e.event_id,
+                    e.title,
+                    t.type as ticket_type,
+                    COALESCE(SUM(CASE WHEN b.status = 'active' THEN b.quantity ELSE 0 END), 0) as sold,
+                    t.quantity_total as total_available
+                FROM events e
+                LEFT JOIN ticket_types t ON e.event_id = t.event_id
+                LEFT JOIN bookings b ON t.ticket_type_id = b.ticket_type_id AND b.status = 'active'
+                WHERE t.ticket_type_id IS NOT NULL
+                GROUP BY e.event_id, t.ticket_type_id
+                ORDER BY e.event_id, t.type
+            `;
+
+            global.db.all(ticketsPerTypeQuery, function(err, ticketsSold) {
+                if (err) {
+                    return next(err);
+                }
+
+                // Query 4: Waitlist conversion rate
+                const waitlistQuery = `
+                    SELECT
+                        COALESCE(SUM(CASE WHEN status = 'promoted' THEN 1 ELSE 0 END), 0) as promoted_count,
+                        COUNT(*) as total_waitlist_entries
+                    FROM waitlist
+                `;
+
+                global.db.get(waitlistQuery, function(err, waitlistData) {
+                    if (err) {
+                        return next(err);
+                    }
+
+                    const conversionRate = waitlistData.total_waitlist_entries > 0
+                        ? ((waitlistData.promoted_count / waitlistData.total_waitlist_entries) * 100).toFixed(1)
+                        : 0;
+
+                    // Query 5: Most popular event (by tickets sold)
+                    const mostPopularQuery = `
+                        SELECT
+                            e.event_id,
+                            e.title,
+                            COALESCE(SUM(CASE WHEN b.status = 'active' THEN b.quantity ELSE 0 END), 0) as tickets_sold
+                        FROM events e
+                        LEFT JOIN bookings b ON e.event_id = b.event_id
+                        GROUP BY e.event_id
+                        ORDER BY tickets_sold DESC
+                        LIMIT 1
+                    `;
+
+                    global.db.get(mostPopularQuery, function(err, mostPopular) {
+                        if (err) {
+                            return next(err);
+                        }
+
+                        // Prepare data for chart (revenue per event)
+                        const chartData = {
+                            labels: eventRevenues.map(e => e.title),
+                            revenues: eventRevenues.map(e => e.event_revenue),
+                            ticketsSold: eventRevenues.map(e => e.tickets_sold)
+                        };
+
+                        res.render('organiser/analytics', {
+                            totalRevenue: totalData.total_revenue.toFixed(2),
+                            totalTicketsSold: totalData.total_tickets_sold,
+                            eventRevenues: eventRevenues,
+                            ticketsSold: ticketsSold,
+                            waitlistPromoted: waitlistData.promoted_count,
+                            waitlistTotal: waitlistData.total_waitlist_entries,
+                            conversionRate: conversionRate,
+                            mostPopular: mostPopular,
+                            chartData: chartData
+                        });
+                    });
+                });
+            });
+        });
+    });
+});
 
 module.exports = router;

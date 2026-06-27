@@ -152,114 +152,83 @@ a:hover {
 }
 
 /* ============================================================================
-   BUTTONS
+   BUTTONS (Unified 3-Role System)
    ============================================================================ */
 
-/* Primary button: Book, Publish, Save, Login, Create New Event */
-.btn-primary {
+/* Primary button: Create/Save/Login/Publish/Book/Join Waitlist */
+.btn-primary,
+.btn-primary-custom {
   background-color: var(--color-primary);
   border: none;
   border-radius: var(--radius-button);
   color: white;
   font-weight: 500;
   padding: 0.6rem 1.5rem;
+  cursor: pointer;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .btn-primary:hover,
 .btn-primary:focus,
-.btn-primary:active {
+.btn-primary:active,
+.btn-primary-custom:hover,
+.btn-primary-custom:focus,
+.btn-primary-custom:active {
   background-color: var(--color-primary-hover);
   color: white;
   box-shadow: 0 0 0 0.2rem rgba(92, 122, 107, 0.25);
 }
 
-/* Secondary button: Back, Edit, outline style */
-.btn-secondary {
+/* Secondary button: Back/Edit/Share/Navigation/Settings/Logout */
+.btn-secondary,
+.btn-secondary-custom {
   background-color: transparent;
   border: 1px solid var(--color-text);
   border-radius: var(--radius-button);
   color: var(--color-text);
   font-weight: 500;
   padding: 0.6rem 1.5rem;
+  cursor: pointer;
   transition: background-color 0.2s ease, border-color 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .btn-secondary:hover,
-.btn-secondary:focus {
+.btn-secondary:focus,
+.btn-secondary-custom:hover,
+.btn-secondary-custom:focus {
   background-color: rgba(43, 45, 42, 0.05);
   border-color: var(--color-text);
   color: var(--color-text);
 }
 
-/* Destructive button: Delete, Cancel (booking) */
-.btn-danger {
+/* Destructive button: Delete/Cancel (always paired with confirm dialog) */
+.btn-danger,
+.btn-danger-custom {
   background-color: var(--color-danger);
   border: none;
   border-radius: var(--radius-button);
   color: white;
   font-weight: 500;
   padding: 0.6rem 1.5rem;
+  cursor: pointer;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .btn-danger:hover,
 .btn-danger:focus,
-.btn-danger:active {
+.btn-danger:active,
+.btn-danger-custom:hover,
+.btn-danger-custom:focus,
+.btn-danger-custom:active {
   background-color: var(--color-danger-hover);
   color: white;
   box-shadow: 0 0 0 0.2rem rgba(201, 116, 58, 0.25);
-}
-
-/* Info button: Share Link, Guest List */
-.btn-info {
-  background-color: var(--color-primary);
-  border: none;
-  border-radius: var(--radius-button);
-  color: white;
-  font-weight: 500;
-  padding: 0.6rem 1.5rem;
-  transition: background-color 0.2s ease;
-}
-
-.btn-info:hover,
-.btn-info:focus {
-  background-color: var(--color-primary-hover);
-  color: white;
-}
-
-/* Warning button: Join Waitlist */
-.btn-warning {
-  background-color: var(--color-status-draft);
-  border: none;
-  border-radius: var(--radius-button);
-  color: white;
-  font-weight: 500;
-  padding: 0.6rem 1.5rem;
-  transition: background-color 0.2s ease;
-}
-
-.btn-warning:hover,
-.btn-warning:focus {
-  background-color: #D68C2A;
-  color: white;
-}
-
-/* Success button: Book Tickets */
-.btn-success {
-  background-color: var(--color-primary);
-  border: none;
-  border-radius: var(--radius-button);
-  color: white;
-  font-weight: 500;
-  padding: 0.6rem 1.5rem;
-  transition: background-color 0.2s ease;
-}
-
-.btn-success:hover,
-.btn-success:focus {
-  background-color: var(--color-primary-hover);
-  color: white;
 }
 
 /* Button sizes */
@@ -619,6 +588,226 @@ a:hover {
 .availability.sold-out {
   background-color: rgba(201, 116, 58, 0.15);
   color: var(--color-danger);
+}
+
+/* ============================================================================
+   TICKET-STUB CARDS (redesigned event cards)
+   ============================================================================ */
+
+.card-ticket-stub {
+  background: white;
+  border: none;
+  border-radius: 0;
+  box-shadow: var(--shadow-card);
+  padding: 0;
+  margin-bottom: 1.5rem;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  display: flex;
+  overflow: hidden;
+
+  /* Perforation effect along edges */
+  background-image:
+    repeating-radial-gradient(circle at 0 0, transparent 0, transparent 8px, rgba(184, 196, 188, 0.3) 8px, rgba(184, 196, 188, 0.3) 16px),
+    repeating-radial-gradient(circle at 0 100%, transparent 0, transparent 8px, rgba(184, 196, 188, 0.3) 8px, rgba(184, 196, 188, 0.3) 16px),
+    repeating-radial-gradient(circle at 100% 0, transparent 0, transparent 8px, rgba(184, 196, 188, 0.3) 8px, rgba(184, 196, 188, 0.3) 16px),
+    repeating-radial-gradient(circle at 100% 100%, transparent 0, transparent 8px, rgba(184, 196, 188, 0.3) 8px, rgba(184, 196, 188, 0.3) 16px),
+    linear-gradient(white, white);
+  background-size: 20px 20px, 20px 20px, 20px 20px, 20px 20px, 100% 100%;
+  background-position: 0 0, 0 100%, 100% 0, 100% 100%;
+  background-repeat: repeat-x, repeat-x, repeat-x, repeat-x;
+}
+
+.card-ticket-stub:hover {
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+/* Main ticket content (left side) */
+.card-ticket-main {
+  flex: 1;
+  padding: 1.5rem;
+  border-right: 2px dashed var(--color-border);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-ticket-main h4,
+.card-ticket-main h5 {
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.card-ticket-main p {
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+/* Ticket stub (right side) — compact stub section */
+.card-ticket-stub-section {
+  width: 170px;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background-color: rgba(92, 122, 107, 0.03);
+  gap: 0.75rem;
+}
+
+.ticket-type-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(92, 122, 107, 0.1);
+}
+
+.ticket-type-row:last-child {
+  border-bottom: none;
+}
+
+.ticket-type-row .label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #999999;
+  letter-spacing: 0.05em;
+}
+
+.ticket-type-row .value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.ticket-type-row .price {
+  font-size: 0.8rem;
+  color: var(--color-text);
+}
+
+/* ============================================================================
+   STAMP-STYLE STATUS BADGES
+   ============================================================================ */
+
+.badge-stamp {
+  display: inline-block;
+  padding: 0.4rem 0.75rem;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transform: rotate(-4deg);
+  background-color: rgba(255, 255, 255, 0.7);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.badge-stamp:hover {
+  transform: rotate(-4deg) scale(1.05);
+}
+
+.badge-stamp.published {
+  color: var(--color-status-published);
+}
+
+.badge-stamp.draft {
+  color: var(--color-status-draft);
+}
+
+/* Cancelled badges keep original struck-through style (not stamped) */
+
+/* ============================================================================
+   PAGE-LOAD FADE-IN ANIMATION
+   ============================================================================ */
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+body {
+  animation: fadeInDown 0.3s ease-out;
+}
+
+/* ============================================================================
+   TOAST NOTIFICATIONS
+   ============================================================================ */
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  background: white;
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-hover);
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+  max-width: 400px;
+  font-size: 0.95rem;
+  animation: slideInRight 0.3s ease-out;
+  pointer-events: auto;
+}
+
+.toast.success {
+  border-left-color: var(--color-status-published);
+  color: var(--color-status-published);
+}
+
+.toast.error {
+  border-left-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.toast.close-btn {
+  float: right;
+  cursor: pointer;
+  opacity: 0.5;
+  font-weight: bold;
+  margin-left: 1rem;
+  transition: opacity 0.2s ease;
+}
+
+.toast.close-btn:hover {
+  opacity: 1;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateX(400px);
+  }
+}
+
+.toast.fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
 }
 
 /* Modal overlay */

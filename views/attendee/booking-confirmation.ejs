@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/main.css">
+    <title>Booking Confirmed</title>
+    <script src="/main.js" defer></script>
+    <style>
+        .confirmation-stub {
+            background: white;
+            border: 2px solid var(--color-primary);
+            border-radius: 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+            padding: 2rem;
+            max-width: 500px;
+            margin: 3rem auto;
+            text-align: center;
+            position: relative;
+        }
+
+        .confirmation-stub::before,
+        .confirmation-stub::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--color-primary),
+                var(--color-primary) 10px,
+                transparent 10px,
+                transparent 20px
+            );
+        }
+
+        .confirmation-stub::before {
+            top: -15px;
+        }
+
+        .confirmation-stub::after {
+            bottom: -15px;
+        }
+
+        .confirmation-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: confirmSlideIn 0.5s ease-out;
+        }
+
+        .confirmation-title {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            color: var(--color-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .confirmation-subtitle {
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .booking-details {
+            background-color: rgba(92, 122, 107, 0.03);
+            border-left: 3px solid var(--color-primary);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .detail-row strong {
+            font-weight: 600;
+        }
+
+        .total-row {
+            border-top: 1px solid var(--color-border);
+            padding-top: 1rem;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .event-info {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background-color: #FAF8F4;
+            border-radius: var(--radius-button);
+            text-align: left;
+        }
+
+        .event-info h4 {
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .event-info p {
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .reference-number {
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #999;
+            margin-top: 1.5rem;
+        }
+
+        @keyframes confirmSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container-fluid">
+            <span class="navbar-brand">Event Manager</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <!-- Confirmation Ticket Stub -->
+                <div class="confirmation-stub">
+                    <div class="confirmation-icon">✓</div>
+                    <h1 class="confirmation-title">Booking Confirmed!</h1>
+                    <p class="confirmation-subtitle">Your tickets are reserved</p>
+
+                    <!-- Event Information -->
+                    <div class="event-info">
+                        <h4><%= event.title %></h4>
+                        <p>
+                            📅 <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'long', month: 'long', day: 'numeric' }) %>
+                        </p>
+                        <p>
+                            🕐 <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
+                        </p>
+                    </div>
+
+                    <!-- Booking Details -->
+                    <div class="booking-details">
+                        <div class="detail-row">
+                            <strong>Attendee:</strong>
+                            <span><%= attendeeName %></span>
+                        </div>
+
+                        <% bookings.forEach(booking => { %>
+                            <div class="detail-row">
+                                <strong><%= booking.ticketType.charAt(0).toUpperCase() + booking.ticketType.slice(1) %>:</strong>
+                                <span><%= booking.quantity %> × £<%= booking.pricePaid.toFixed(2) %></span>
+                            </div>
+                        <% }); %>
+
+                        <div class="detail-row total-row">
+                            <strong>Total:</strong>
+                            <strong>£<%= totalPrice.toFixed(2) %></strong>
+                        </div>
+                    </div>
+
+                    <!-- Reference Number -->
+                    <div class="reference-number">
+                        Ref: <%= Date.now().toString().slice(-8) %>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <a href="/attendee" class="btn btn-secondary-custom">Browse More Events</a>
+                        <a href="/" class="btn btn-primary-custom">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

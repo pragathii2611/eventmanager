@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <title>Analytics Dashboard</title>
+    <script src="/main.js" defer></script>
+    <style>
+        .metric-card {
+            background: white;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin: 0.5rem 0;
+            font-family: var(--font-display);
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            height: 400px;
+        }
+
+        .detail-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .detail-table table {
+            margin-bottom: 0;
+        }
+
+        .detail-table thead {
+            background-color: rgba(92, 122, 107, 0.03);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .detail-table th {
+            font-weight: 600;
+            color: var(--color-text);
+            padding: 1rem;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+
+        .detail-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .detail-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .detail-table tbody tr:hover {
+            background-color: rgba(92, 122, 107, 0.02);
+        }
+
+        .stat-badge {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            background-color: rgba(92, 122, 107, 0.1);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .conversion-rate {
+            font-size: 1.8rem;
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .section-heading {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin: 2rem 0 1.5rem 0;
+            color: var(--color-text);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container-fluid">
+            <span class="navbar-brand">Event Manager</span>
+            <a href="/organiser/logout" class="btn btn-secondary-custom btn-sm">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <!-- Header -->
+        <div class="section">
+            <h1>Analytics Dashboard</h1>
+            <p class="text-muted">Real-time metrics across all your events</p>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="row">
+            <div class="col-md-3 col-sm-6">
+                <div class="metric-card">
+                    <p class="metric-label">Total Revenue</p>
+                    <p class="metric-value">£<%= totalRevenue %></p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="metric-card">
+                    <p class="metric-label">Tickets Sold</p>
+                    <p class="metric-value"><%= totalTicketsSold %></p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="metric-card">
+                    <p class="metric-label">Waitlist Conversion</p>
+                    <p class="conversion-rate"><%= conversionRate %>%</p>
+                    <p class="metric-label"><%= waitlistPromoted %> of <%= waitlistTotal %> promoted</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="metric-card">
+                    <p class="metric-label">Most Popular Event</p>
+                    <% if (mostPopular && mostPopular.tickets_sold > 0) { %>
+                        <p style="font-size: 1.1rem; font-weight: 600; margin: 0.5rem 0;"><%= mostPopular.title %></p>
+                        <span class="stat-badge"><%= mostPopular.tickets_sold %> tickets</span>
+                    <% } else { %>
+                        <p style="color: #999; margin: 1rem 0;">No sales yet</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue by Event Chart -->
+        <h2 class="section-heading">Revenue by Event</h2>
+        <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+        </div>
+
+        <!-- Event Revenue Details -->
+        <h2 class="section-heading">Event Revenue Breakdown</h2>
+        <div class="detail-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Revenue</th>
+                        <th>Tickets Sold</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% eventRevenues.forEach(event => { %>
+                        <tr>
+                            <td><strong><%= event.title %></strong></td>
+                            <td>£<%= event.event_revenue.toFixed(2) %></td>
+                            <td><span class="stat-badge"><%= event.tickets_sold %></span></td>
+                        </tr>
+                    <% }); %>
+                    <% if (eventRevenues.length === 0) { %>
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: #999; padding: 2rem;">No events with bookings yet</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Ticket Sales by Type -->
+        <h2 class="section-heading">Tickets Sold by Type</h2>
+        <div class="detail-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Event</th>
+                        <th>Ticket Type</th>
+                        <th>Sold</th>
+                        <th>Available</th>
+                        <th>Sell-Through</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% ticketsSold.forEach(item => { %>
+                        <tr>
+                            <td><strong><%= item.title %></strong></td>
+                            <td><%= item.ticket_type.charAt(0).toUpperCase() + item.ticket_type.slice(1) %></td>
+                            <td><%= item.sold %></td>
+                            <td><%= item.total_available %></td>
+                            <td>
+                                <% const percent = item.total_available > 0 ? ((item.sold / item.total_available) * 100).toFixed(0) : 0; %>
+                                <span class="stat-badge"><%= percent %>%</span>
+                            </td>
+                        </tr>
+                    <% }); %>
+                    <% if (ticketsSold.length === 0) { %>
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #999; padding: 2rem;">No events created yet</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Back Button -->
+        <div class="section">
+            <a href="/organiser" class="btn btn-secondary-custom">← Back to Home</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Initialize revenue chart with server-computed data
+        const revenueCtx = document.getElementById('revenueChart');
+        if (revenueCtx && <%= JSON.stringify(chartData.labels).length %> > 2) {
+            new Chart(revenueCtx, {
+                type: 'bar',
+                data: {
+                    labels: <%= JSON.stringify(chartData.labels) %>,
+                    datasets: [{
+                        label: 'Revenue (£)',
+                        data: <%= JSON.stringify(chartData.revenues) %>,
+                        backgroundColor: 'rgba(92, 122, 107, 0.8)',
+                        borderColor: 'rgba(92, 122, 107, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '£' + value.toFixed(0);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

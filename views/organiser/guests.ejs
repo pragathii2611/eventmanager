@@ -8,12 +8,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/main.css">
     <title>Guest List - <%= event.title %></title>
+    <script src="/main.js" defer></script>
 </head>
 <body>
     <nav class="navbar">
         <div class="container-fluid">
             <span class="navbar-brand">Event Manager</span>
-            <a href="/organiser/logout" class="btn btn-secondary btn-sm">Logout</a>
+            <a href="/organiser/logout" class="btn btn-secondary-custom btn-sm">Logout</a>
         </div>
     </nav>
 
@@ -50,12 +51,12 @@
                                             <td><strong><%= booking.attendee_name %></strong></td>
                                             <td><%= booking.ticket_type.charAt(0).toUpperCase() + booking.ticket_type.slice(1) %></td>
                                             <td><%= booking.quantity %></td>
-                                            <td>£<%= booking.price.toFixed(2) %></td>
-                                            <td><strong>£<%= (booking.quantity * booking.price).toFixed(2) %></strong></td>
+                                            <td>£<%= booking.price_paid.toFixed(2) %></td>
+                                            <td><strong>£<%= (booking.quantity * booking.price_paid).toFixed(2) %></strong></td>
                                             <td><small><%= new Date(booking.booked_at).toLocaleDateString() %></small></td>
                                             <td>
                                                 <form method="POST" action="<%= `/organiser/booking/${booking.booking_id}/cancel` %>" style="display: inline;">
-                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Cancel this booking? Any waitlisted attendees will be promoted if tickets are now available.')">Cancel</button>
+                                                    <button type="submit" class="btn btn-sm btn-danger-custom" onclick="return confirm('Cancel this booking? Any waitlisted attendees will be promoted if tickets are now available.')">Cancel</button>
                                                 </form>
                                             </td>
                                         </tr>
@@ -111,7 +112,7 @@
 
                 <!-- Back Button -->
                 <div class="section mt-5">
-                    <a href="/organiser" class="btn btn-secondary">← Back to Events</a>
+                    <a href="/organiser" class="btn btn-secondary-custom">← Back to Events</a>
                 </div>
             </div>
         </div>

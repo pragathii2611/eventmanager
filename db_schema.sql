@@ -59,10 +59,11 @@ CREATE TABLE IF NOT EXISTS bookings (
     ticket_type_id INTEGER NOT NULL,
     attendee_name TEXT NOT NULL,
     quantity INTEGER NOT NULL,
+    price_paid REAL NOT NULL DEFAULT 0,
     booked_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     status TEXT NOT NULL CHECK (status IN ('active', 'cancelled')) DEFAULT 'active',
-    FOREIGN KEY (event_id) REFERENCES events(event_id),
-    FOREIGN KEY (ticket_type_id) REFERENCES ticket_types(ticket_type_id)
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
+    FOREIGN KEY (ticket_type_id) REFERENCES ticket_types(ticket_type_id) ON DELETE CASCADE
 );
 
 -- ============================================================================
@@ -75,9 +76,10 @@ CREATE TABLE IF NOT EXISTS waitlist (
     attendee_name TEXT NOT NULL,
     requested_quantity INTEGER NOT NULL,
     position INTEGER NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('waiting', 'promoted')) DEFAULT 'waiting',
     joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (event_id) REFERENCES events(event_id),
-    FOREIGN KEY (ticket_type_id) REFERENCES ticket_types(ticket_type_id)
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
+    FOREIGN KEY (ticket_type_id) REFERENCES ticket_types(ticket_type_id) ON DELETE CASCADE
 );
 
 -- ============================================================================
