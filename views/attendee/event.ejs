@@ -116,6 +116,12 @@
                                     <input type="text" class="form-control" id="waitlist_name" name="waitlist_name" required autofocus>
                                 </div>
 
+                                <div class="mb-4">
+                                    <label for="waitlist_email" class="form-label">Your Email</label>
+                                    <input type="email" class="form-control" id="waitlist_email" name="waitlist_email" required>
+                                    <small class="form-text text-muted">We'll notify you when a spot opens up</small>
+                                </div>
+
                                 <% soldOutTickets.forEach(ticket => { %>
                                     <div class="card-custom" style="border-left: 3px solid var(--color-status-draft); background-color: rgba(232, 163, 61, 0.03);">
                                         <div class="row">

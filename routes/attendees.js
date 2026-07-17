@@ -233,8 +233,10 @@ router.post('/event/:id/book', (req, res, next) => {
                 // All validations passed; create bookings
                 createBookings(0);
             } else {
-                // Validation failed; re-render with errors
-                res.status(400).send('Not enough tickets available: ' + validationErrors.join(', '));
+                // Validation failed; rollback transaction and return error
+                global.db.run('ROLLBACK', function() {
+                    res.status(400).send('Not enough tickets available: ' + validationErrors.join(', '));
+                });
             }
             return;
         }
@@ -268,18 +270,24 @@ router.post('/event/:id/book', (req, res, next) => {
     // Start validation chain
     checkAvailability(0);
 
-    // Create booking records
+    // Create booking records (wrapped in transaction for safety)
     const createdBookings = [];
     const createBookings = (index) => {
         if (index >= bookings.length) {
-            // All bookings created successfully
-            // Store confirmation data in session for flash display
-            req.session.bookingConfirmation = {
-                attendeeName: attendeeName,
-                bookings: createdBookings,
-                eventId: eventId
-            };
-            res.redirect(`/attendee/booking-confirmation`);
+            // All bookings created successfully; commit transaction
+            global.db.run('COMMIT', function(err) {
+                if (err) {
+                    return next(err);
+                }
+
+                // Store confirmation data in session for flash display
+                req.session.bookingConfirmation = {
+                    attendeeName: attendeeName,
+                    bookings: createdBookings,
+                    eventId: eventId
+                };
+                res.redirect(`/attendee/booking-confirmation`);
+            });
             return;
         }
 
@@ -288,7 +296,11 @@ router.post('/event/:id/book', (req, res, next) => {
         // Calculate current tiered price at booking time
         calculateCurrentPrice(booking.ticketTypeId, function(err, tieredPrice) {
             if (err) {
-                return next(err);
+                // Rollback on error
+                global.db.run('ROLLBACK', function() {
+                    return next(err);
+                });
+                return;
             }
 
             // tieredPrice is null if sold out, but we already validated availability
@@ -301,7 +313,11 @@ router.post('/event/:id/book', (req, res, next) => {
 
             global.db.run(insertQuery, [eventId, booking.ticketTypeId, attendeeName, booking.quantity, pricePaid], function(err) {
                 if (err) {
-                    return next(err);
+                    // Rollback on error
+                    global.db.run('ROLLBACK', function() {
+                        return next(err);
+                    });
+                    return;
                 }
 
                 // Store created booking info for confirmation page
@@ -316,6 +332,14 @@ router.post('/event/:id/book', (req, res, next) => {
             });
         });
     };
+
+    // Start transaction before validation
+    global.db.run('BEGIN TRANSACTION', function(err) {
+        if (err) {
+            return next(err);
+        }
+        checkAvailability(0);
+    });
 });
 
 /**
@@ -327,6 +351,7 @@ router.post('/event/:id/book', (req, res, next) => {
 router.post('/event/:id/waitlist', (req, res, next) => {
     const eventId = req.params.id;
     const attendeeName = req.body.waitlist_name;
+    const attendeeEmail = req.body.waitlist_email;
 
     // Collect waitlist data: {ticket_type_id_X: quantity, ...}
     const waitlistEntries = [];
@@ -340,8 +365,8 @@ router.post('/event/:id/waitlist', (req, res, next) => {
         }
     }
 
-    if (!attendeeName || waitlistEntries.length === 0) {
-        return res.status(400).send('Please enter name and select at least one ticket type');
+    if (!attendeeName || !attendeeEmail || waitlistEntries.length === 0) {
+        return res.status(400).send('Please enter name, email, and select at least one ticket type');
     }
 
     // For each waitlist entry, get the next position and insert
@@ -371,11 +396,11 @@ router.post('/event/:id/waitlist', (req, res, next) => {
 
             // Query 2: Insert into waitlist
             const insertQuery = `
-                INSERT INTO waitlist (event_id, ticket_type_id, attendee_name, requested_quantity, position, joined_at)
-                VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                INSERT INTO waitlist (event_id, ticket_type_id, attendee_name, attendee_email, requested_quantity, position, joined_at)
+                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
             `;
 
-            global.db.run(insertQuery, [eventId, entry.ticketTypeId, attendeeName, entry.quantity, nextPosition], function(err) {
+            global.db.run(insertQuery, [eventId, entry.ticketTypeId, attendeeName, attendeeEmail, entry.quantity, nextPosition], function(err) {
                 if (err) {
                     return next(err);
                 }

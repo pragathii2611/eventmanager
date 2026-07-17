@@ -74,6 +74,7 @@ CREATE TABLE IF NOT EXISTS waitlist (
     event_id INTEGER NOT NULL,
     ticket_type_id INTEGER NOT NULL,
     attendee_name TEXT NOT NULL,
+    attendee_email TEXT NOT NULL,
     requested_quantity INTEGER NOT NULL,
     position INTEGER NOT NULL,
     status TEXT NOT NULL CHECK (status IN ('waiting', 'promoted')) DEFAULT 'waiting',
@@ -121,24 +122,24 @@ VALUES
 
 -- Demo bookings: show some tickets already booked, plus one cancelled for audit trail demo
 -- Event 1, full-price: 1 booked (Alice) + 1 cancelled (Emma) = 1 full ticket remaining
-INSERT INTO bookings (event_id, ticket_type_id, attendee_name, quantity, booked_at, status)
+INSERT INTO bookings (event_id, ticket_type_id, attendee_name, quantity, price_paid, booked_at, status)
 VALUES
-    (1, 1, 'Alice Smith', 1, '2026-06-21 08:00:00', 'active'),
-    (1, 1, 'Emma Davis', 1, '2026-06-21 07:30:00', 'cancelled');
+    (1, 1, 'Alice Smith', 1, 15.00, '2026-06-21 08:00:00', 'active'),
+    (1, 1, 'Emma Davis', 1, 15.00, '2026-06-21 07:30:00', 'cancelled');
 
 -- Event 1, concession: 2 booked (Bob, Carol) = 1 concession ticket remaining
-INSERT INTO bookings (event_id, ticket_type_id, attendee_name, quantity, booked_at, status)
+INSERT INTO bookings (event_id, ticket_type_id, attendee_name, quantity, price_paid, booked_at, status)
 VALUES
-    (1, 2, 'Bob Jones', 1, '2026-06-21 09:00:00', 'active'),
-    (1, 2, 'Carol White', 1, '2026-06-21 09:30:00', 'active');
+    (1, 2, 'Bob Jones', 1, 10.00, '2026-06-21 09:00:00', 'active'),
+    (1, 2, 'Carol White', 1, 10.00, '2026-06-21 09:30:00', 'active');
 
 -- Event 2: no bookings yet (all tickets available)
 
 -- Demo waitlist entry (for Event 1, full-price, which now has only 1 free after 1 active booking)
 -- David requested 2, but only 1 is available — should NOT auto-promote
-INSERT INTO waitlist (event_id, ticket_type_id, attendee_name, requested_quantity, position, joined_at)
+INSERT INTO waitlist (event_id, ticket_type_id, attendee_name, attendee_email, requested_quantity, position, joined_at)
 VALUES
-    (1, 1, 'David Brown', 2, 1, '2026-06-21 10:00:00');
+    (1, 1, 'David Brown', 'david.brown@example.com', 2, 1, '2026-06-21 10:00:00');
 
 COMMIT;
 

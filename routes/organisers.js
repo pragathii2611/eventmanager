@@ -417,16 +417,29 @@ router.post('/event/:id/publish', authRequired, (req, res, next) => {
 router.post('/event/:id/delete', authRequired, (req, res, next) => {
     const eventId = req.params.id;
 
-    // Foreign keys are set to ON DELETE CASCADE, so this will cascade
-    const query = "DELETE FROM events WHERE event_id = ?";
+    // First check if event exists
+    const checkQuery = "SELECT event_id FROM events WHERE event_id = ?";
 
-    global.db.run(query, [eventId], function(err) {
+    global.db.get(checkQuery, [eventId], function(err, event) {
         if (err) {
             return next(err);
         }
 
-        req.session.flash = { type: 'success', message: '✓ Event deleted successfully.' };
-        res.redirect('/organiser');
+        if (!event) {
+            return res.status(404).send('Event not found');
+        }
+
+        // Foreign keys are set to ON DELETE CASCADE, so this will cascade
+        const deleteQuery = "DELETE FROM events WHERE event_id = ?";
+
+        global.db.run(deleteQuery, [eventId], function(err) {
+            if (err) {
+                return next(err);
+            }
+
+            req.session.flash = { type: 'success', message: '✓ Event deleted successfully.' };
+            res.redirect('/organiser');
+        });
     });
 });
 
