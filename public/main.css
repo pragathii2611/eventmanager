@@ -631,6 +631,8 @@ button {
   margin-bottom: 1.5rem;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
   display: flex;
+  justify-content: space-between;
+  align-items: stretch;
   overflow: hidden;
 
   /* Perforation effect along edges */
@@ -652,12 +654,13 @@ button {
 
 /* Main ticket content (left side) */
 .card-ticket-main {
-  flex: 1;
+  flex: 1 1 auto;
   padding: 1.5rem;
   border-right: 2px dashed var(--color-border);
   display: flex;
   flex-direction: column;
   justify-content: center;
+  min-width: 0;
 }
 
 .card-ticket-main h4,
@@ -673,15 +676,17 @@ button {
 
 /* Ticket stub (right side) — compact stub section */
 .card-ticket-stub-section {
+  flex: 0 0 auto;
   width: 170px;
   padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
-  text-align: center;
+  align-items: flex-end;
+  text-align: right;
   background-color: rgba(92, 122, 107, 0.03);
   gap: 0.75rem;
+  margin-left: auto;
 }
 
 .ticket-type-row {
