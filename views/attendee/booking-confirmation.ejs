@@ -118,6 +118,24 @@
             margin-top: 1.5rem;
         }
 
+        .qr-code-block {
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .qr-code-block img {
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-button);
+            padding: 0.5rem;
+            background: white;
+        }
+
+        .qr-code-caption {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 0.5rem;
+        }
+
         @keyframes confirmSlideIn {
             from {
                 opacity: 0;
@@ -158,7 +176,7 @@
                     <div class="event-info">
                         <h4><%= event.title %></h4>
                         <p>
-                            📅 <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'long', month: 'long', day: 'numeric' }) %>
+                            <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'long', month: 'long', day: 'numeric' }) %>
                         </p>
                         <p>
                             <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
@@ -185,13 +203,23 @@
                         </div>
                     </div>
 
+                    <!-- QR Code Ticket -->
+                    <%
+                        const qrData = `Event Manager Ticket\nEvent: ${event.title}\nAttendee: ${attendeeName}\nRef: ${reference}\nDate: ${new Date(event.event_date).toLocaleDateString('en-GB')}`;
+                    %>
+                    <div class="qr-code-block">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=<%= encodeURIComponent(qrData) %>" alt="Ticket QR code" width="160" height="160">
+                        <p class="qr-code-caption">Scan to view ticket details</p>
+                    </div>
+
                     <!-- Reference Number -->
                     <div class="reference-number">
-                        Ref: <%= Date.now().toString().slice(-8) %>
+                        Ref: <%= reference %>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="action-buttons">
+                        <a href="<%= `/attendee/event/${event.event_id}/calendar.ics` %>" class="btn btn-secondary-custom">Add to Calendar</a>
                         <a href="/attendee" class="btn btn-secondary-custom">Browse More Events</a>
                         <a href="/" class="btn btn-primary-custom">Back to Home</a>
                     </div>

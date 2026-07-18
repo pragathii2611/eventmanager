@@ -63,6 +63,93 @@ function calculateCurrentPrice(ticketTypeId, callback) {
 }
 
 // ============================================================================
+// CALENDAR EXPORT (.ics) HELPERS
+// ============================================================================
+
+/**
+ * escapeICSText(text)
+ * Escapes commas, semicolons, backslashes and newlines per the iCalendar
+ * spec (RFC 5545) so event titles/descriptions can't break the file format.
+ */
+function escapeICSText(text) {
+    return String(text)
+        .replace(/\\/g, '\\\\')
+        .replace(/;/g, '\\;')
+        .replace(/,/g, '\\,')
+        .replace(/\n/g, '\\n');
+}
+
+/**
+ * formatICSDateTime(sqliteDateStr, addHours)
+ * Converts a SQLite "YYYY-MM-DD HH:MM:SS" string into iCalendar's
+ * "YYYYMMDDTHHMMSS" floating-time format, optionally adding N hours
+ * (used for DTEND). Arithmetic runs through Date.UTC so hour overflow
+ * (e.g. 23:30 + 1hr) rolls into the next day correctly, without ever
+ * touching the server's local timezone.
+ */
+function formatICSDateTime(sqliteDateStr, addHours) {
+    const [datePart, timePart] = sqliteDateStr.split(' ');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, minute, second] = timePart.split(':').map(Number);
+
+    const dt = new Date(Date.UTC(year, month - 1, day, hour, minute, second || 0));
+    if (addHours) {
+        dt.setUTCHours(dt.getUTCHours() + addHours);
+    }
+
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${dt.getUTCFullYear()}${pad(dt.getUTCMonth() + 1)}${pad(dt.getUTCDate())}T${pad(dt.getUTCHours())}${pad(dt.getUTCMinutes())}${pad(dt.getUTCSeconds())}`;
+}
+
+/**
+ * GET /attendee/event/:id/calendar.ics
+ * Generates a downloadable .ics file for a published event so attendees
+ * can add it to Google Calendar, Outlook, Apple Calendar, etc.
+ * Events default to a 1-hour duration (no end time stored in the schema).
+ * Inputs: event_id from URL
+ * Outputs: text/calendar file download, or 404 if event doesn't exist
+ */
+router.get('/event/:id/calendar.ics', (req, res, next) => {
+    const eventId = req.params.id;
+
+    const eventQuery = "SELECT event_id, title, description, event_date FROM events WHERE event_id = ? AND status = 'published'";
+
+    global.db.get(eventQuery, [eventId], function(err, event) {
+        if (err) {
+            return next(err);
+        }
+
+        if (!event) {
+            return res.status(404).send('Event not found');
+        }
+
+        const dtStart = formatICSDateTime(event.event_date, 0);
+        const dtEnd = formatICSDateTime(event.event_date, 1);
+        const dtStamp = formatICSDateTime(new Date().toISOString().slice(0, 19).replace('T', ' '), 0);
+
+        const icsContent = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//Event Manager//Booking//EN',
+            'CALSCALE:GREGORIAN',
+            'BEGIN:VEVENT',
+            `UID:event-${event.event_id}@eventmanager.local`,
+            `DTSTAMP:${dtStamp}Z`,
+            `DTSTART:${dtStart}`,
+            `DTEND:${dtEnd}`,
+            `SUMMARY:${escapeICSText(event.title)}`,
+            `DESCRIPTION:${escapeICSText(event.description || '')}`,
+            'END:VEVENT',
+            'END:VCALENDAR'
+        ].join('\r\n');
+
+        res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="${event.title.replace(/[^a-z0-9]/gi, '-')}.ics"`);
+        res.send(icsContent);
+    });
+});
+
+// ============================================================================
 // ATTENDEE HOME PAGE
 // ============================================================================
 
@@ -267,9 +354,6 @@ router.post('/event/:id/book', (req, res, next) => {
         });
     };
 
-    // Start validation chain
-    checkAvailability(0);
-
     // Create booking records (wrapped in transaction for safety)
     const createdBookings = [];
     const createBookings = (index) => {
@@ -471,11 +555,16 @@ router.get('/booking-confirmation', (req, res, next) => {
             // Clear session confirmation after displaying
             delete req.session.bookingConfirmation;
 
+            // Build a stable booking reference from the first booking's ID
+            // (not Date.now() — that changes on every reload/render)
+            const reference = `EVT${eventId}-${String(bookingDetails[0].bookingId).padStart(6, '0')}`;
+
             res.render('attendee/booking-confirmation', {
                 attendeeName: confirmation.attendeeName,
                 event: event,
                 bookings: bookingDetails,
-                totalPrice: bookingDetails.reduce((sum, b) => sum + b.total, 0)
+                totalPrice: bookingDetails.reduce((sum, b) => sum + b.total, 0),
+                reference: reference
             });
         });
     });

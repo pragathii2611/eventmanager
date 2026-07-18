@@ -29,6 +29,7 @@
                         <strong><%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %></strong>
                         <strong>at <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %></strong>
                     </p>
+                    <a href="<%= `/attendee/event/${event.event_id}/calendar.ics` %>" class="btn btn-sm btn-secondary-custom">Add to Calendar</a>
                 </div>
 
                 <!-- Booking Form -->
