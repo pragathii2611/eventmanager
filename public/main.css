@@ -826,9 +826,22 @@ a.card-ticket-main:hover h4 {
   padding-top: 1rem;
 }
 
+/* flex-basis: 0 (not auto) so Share Link / Publish / Delete split the
+   row evenly regardless of their own text length or padding */
 .card-ticket-stub-section .btn,
 .card-ticket-stub-section form {
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.card-ticket-stub-section .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .ticket-type-row {
