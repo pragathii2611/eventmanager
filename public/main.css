@@ -1,7 +1,7 @@
 /* Design Tokens & Color System */
 
 :root {
-  /* Minimal 3-Color Pastel Palette */
+  /* 3-Color Pastel Palette */
   --color-bg: #FFFFFF;
   --color-text: #4A4A4A;
   --color-primary: #A8D8D8;
@@ -14,7 +14,7 @@
   --color-status-cancelled: #F5B4B4;
   --color-light-bg: #F9F9FB;
 
-  /* Enhanced Shadows & Radius (Elegant + Friendly) */
+  /*Shadows & Radius */
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04);
   --shadow-hover: 0 8px 24px rgba(168, 216, 216, 0.15);
   --shadow-input: inset 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -154,7 +154,7 @@ button {
 }
 
 /* Small eyebrow heading identifying which required page this is
-   (Organiser Home Page / Attendee Event Page / etc.) — a genuine
+   (Organiser Home Page / Attendee Event Page / etc.) — a
    heading element, kept visually quiet since the page title below it
    is the primary visual anchor */
 .page-kicker {

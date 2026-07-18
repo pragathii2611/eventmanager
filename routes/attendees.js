@@ -1,5 +1,4 @@
 /**
- * routes/attendees.js
  * All the routes for the attendee side of the app: browsing events,
  * viewing a single event, booking tickets, joining the waitlist, and
  * showing the booking confirmation page.
@@ -10,7 +9,6 @@ const router = express.Router();
 const { calculateCurrentPrice } = require('../lib/pricing');
 
 /**
- * escapeICSText(text)
  * Calendar files (.ics) use commas, semicolons and newlines as special
  * characters, so if an event title or description contains one of these
  * it needs to be escaped first or it will break the file.
@@ -24,7 +22,6 @@ function escapeICSText(text) {
 }
 
 /**
- * formatICSDateTime(sqliteDateStr, addHours)
  * Turns a date from the database (e.g. "2026-07-15 09:00:00") into the
  * date format that .ics calendar files expect (e.g. "20260715T090000").
  * Can also add extra hours on, which is used to work out the end time
@@ -45,7 +42,6 @@ function formatICSDateTime(sqliteDateStr, addHours) {
 }
 
 /**
- * GET /attendee/event/:id/calendar.ics
  * Lets an attendee download the event as a calendar file so they can
  * add it to Google Calendar, Outlook, Apple Calendar, etc.
  * Since we don't store an end time in the database, the event is
@@ -95,7 +91,6 @@ router.get('/event/:id/calendar.ics', (req, res, next) => {
 });
 
 /**
- * GET /attendee
  * The attendee home page. Shows the site name/description and a list
  * of all published events, soonest first.
  * Inputs: none
@@ -138,11 +133,10 @@ router.get('/', (req, res, next) => {
 });
 
 /**
- * GET /attendee/event/:id
  * Shows the details for one event, including its ticket types and
  * current prices, plus the booking form.
  * Inputs: event_id from the URL
- * Outputs: renders attendee/event.ejs with the event and ticket info
+ * Outputs: renders attendee/event.ejs with the event and ticket type info
  */
 router.get('/event/:id', (req, res, next) => {
     const eventId = req.params.id;
@@ -219,7 +213,6 @@ router.get('/event/:id', (req, res, next) => {
 });
 
 /**
- * POST /attendee/event/:id/book
  * Books tickets for an attendee. Checks there's enough availability
  * before creating the booking rows, all wrapped in a database
  * transaction so two people booking at the same time can't oversell.
@@ -367,7 +360,6 @@ router.post('/event/:id/book', (req, res, next) => {
 });
 
 /**
- * POST /attendee/event/:id/waitlist
  * Adds an attendee to the waitlist for one or more sold-out ticket types.
  * Inputs: event_id from the URL, req.body with attendee_name,
  *         attendee_email, and a quantity field per ticket type
@@ -440,7 +432,6 @@ router.post('/event/:id/waitlist', (req, res, next) => {
 });
 
 /**
- * GET /attendee/booking-confirmation
  * Shows the confirmation page after a booking, with a QR code and
  * booking reference. Reads the booking info that was saved into the
  * session by the /book route just before redirecting here.

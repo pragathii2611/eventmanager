@@ -27,7 +27,6 @@ function authRequired(req, res, next) {
 }
 
 /**
- * GET /organiser/login
  * Shows the login form.
  * Inputs: none
  * Outputs: renders organiser/login.ejs
@@ -37,9 +36,9 @@ router.get('/login', (req, res) => {
 });
 
 /**
- * POST /organiser/login
- * Checks the username and password and logs the organiser in if they
- * match. Passwords are stored hashed with bcrypt, never as plain text.
+ * Checks the username and password sent from the login form and logs
+ * the organiser in if they match. Passwords are stored hashed with
+ * bcrypt, never as plain text.
  * Inputs: req.body.username, req.body.password
  * Outputs: if correct, saves organiser_id in the session and redirects
  *          to /organiser; if wrong, shows the login form again with
@@ -75,7 +74,6 @@ router.post('/login', (req, res, next) => {
 });
 
 /**
- * GET /organiser/logout
  * Logs the organiser out by destroying their session.
  * Inputs: none
  * Outputs: session destroyed, redirects to the main home page
@@ -90,7 +88,6 @@ router.get('/logout', (req, res) => {
 });
 
 /**
- * GET /organiser
  * The organiser home page. Shows the site name/description, a button
  * to create a new event, and the lists of published and draft events.
  * Inputs: none (organiser_id comes from the session)
@@ -164,10 +161,10 @@ router.get('/', authRequired, (req, res, next) => {
 });
 
 /**
- * GET /organiser/settings
- * Shows the site settings form, pre-filled with the current values.
+ * Shows the site settings form, pre-filled with the current site name
+ * and description.
  * Inputs: none
- * Outputs: renders organiser/settings.ejs with the current site name/description
+ * Outputs: renders organiser/settings.ejs with the current settings
  */
 router.get('/settings', authRequired, (req, res, next) => {
     const query = "SELECT site_name, site_description FROM site_settings WHERE settings_id = 1";
@@ -186,8 +183,7 @@ router.get('/settings', authRequired, (req, res, next) => {
 });
 
 /**
- * POST /organiser/settings
- * Saves the new site name and description.
+ * Saves the new site name and description from the settings form.
  * Inputs: req.body.site_name, req.body.site_description
  * Outputs: if both fields are filled in, updates the database and
  *          redirects to /organiser; otherwise shows the form again
@@ -218,7 +214,6 @@ router.post('/settings', authRequired, (req, res, next) => {
 });
 
 /**
- * GET /organiser/event/new
  * Creates a new blank draft event and sends the organiser straight to
  * its edit page so they can fill in the details.
  * Inputs: none
@@ -264,7 +259,6 @@ router.get('/event/new', authRequired, (req, res, next) => {
 });
 
 /**
- * GET /organiser/event/:id
  * Shows the edit form for one event, pre-filled with its current
  * details and ticket type info.
  * Inputs: event_id from the URL
@@ -300,7 +294,6 @@ router.get('/event/:id', authRequired, (req, res, next) => {
 });
 
 /**
- * POST /organiser/event/:id
  * Saves changes made on the edit event form: title, description,
  * date, and both ticket types' prices/quantities.
  * Inputs: event_id from the URL, req.body with title, description,
@@ -390,7 +383,6 @@ router.post('/event/:id', authRequired, (req, res, next) => {
 });
 
 /**
- * POST /organiser/event/:id/publish
  * Changes a draft event to published, so attendees can see and book it.
  * Inputs: event_id from the URL
  * Outputs: updates the event's status and published_at, redirects to /organiser
@@ -415,10 +407,9 @@ router.post('/event/:id/publish', authRequired, (req, res, next) => {
 });
 
 /**
- * POST /organiser/event/:id/delete
- * Deletes an event completely. Because the database schema uses
- * ON DELETE CASCADE, this also removes its ticket types, bookings,
- * and waitlist entries automatically.
+ * Deletes an event completely. Because the database schema uses ON
+ * DELETE CASCADE, this also removes its ticket types, bookings, and
+ * waitlist entries automatically.
  * Inputs: event_id from the URL
  * Outputs: deletes the event from the database, redirects to /organiser
  */
@@ -451,7 +442,6 @@ router.post('/event/:id/delete', authRequired, (req, res, next) => {
 });
 
 /**
- * GET /organiser/event/:id/guests
  * Shows the guest list for one event: everyone who has booked, split
  * into active and cancelled bookings, with a cancel button for each
  * active booking.
@@ -508,7 +498,6 @@ router.get('/event/:id/guests', authRequired, (req, res, next) => {
 });
 
 /**
- * POST /organiser/booking/:id/cancel
  * Cancels a booking. The booking isn't deleted, just marked as
  * cancelled so there's a record of it. Afterwards, checks if anyone
  * on the waitlist can now be promoted into the newly freed-up spot.
@@ -569,7 +558,8 @@ router.post('/booking/:id/cancel', authRequired, (req, res, next) => {
  * behind them, even if those people would fit. This is deliberate -
  * it keeps the queue fair and first-come-first-served.
  *
- * Inputs: ticketTypeId, callback(err) function to run once finished
+ * Inputs: ticketTypeId (the ticket type to check), callback(err)
+ *         function to run once finished
  * Outputs: may create new bookings and update waitlist entries; calls
  *          callback when there's nothing left to do
  */
@@ -665,7 +655,6 @@ function promoteWaitlistForTicketType(ticketTypeId, callback) {
 }
 
 /**
- * GET /organiser/analytics
  * Shows the analytics dashboard: total revenue, tickets sold, revenue
  * per event, tickets sold by type, waitlist conversion rate, and the
  * most popular event. Everything is worked out with SQL queries
