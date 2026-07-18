@@ -682,8 +682,8 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-end;
-  text-align: right;
+  align-items: center;
+  text-align: center;
   background-color: rgba(92, 122, 107, 0.03);
   gap: 0.75rem;
   margin-left: auto;

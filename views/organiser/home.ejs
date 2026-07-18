@@ -54,8 +54,7 @@
                                 </div>
                             </div>
                             <div class="card-ticket-stub-section">
-                                <p style="font-size: 0.85rem; margin: 0; color: #999;">ACTIONS</p>
-                                <div style="display: flex; flex-direction: column; gap: 0.4rem; width: 100%;">
+                                <div style="display: flex; flex-direction: column; gap: 0.4rem; width: 100%; justify-content: center; align-items: center;">
                                     <a href="<%= `/attendee/event/${event.event_id}` %>" class="btn btn-sm btn-secondary-custom" target="_blank">Share Link</a>
                                     <form method="POST" action="<%= `/organiser/event/${event.event_id}/delete` %>" style="margin: 0; width: 100%;">
                                         <button type="submit" class="btn btn-sm btn-danger-custom w-100" onclick="return confirm('Delete this event? This cannot be undone.')">Delete</button>
@@ -92,8 +91,7 @@
                                 </div>
                             </div>
                             <div class="card-ticket-stub-section">
-                                <p style="font-size: 0.85rem; margin: 0; color: #999;">ACTIONS</p>
-                                <div style="display: flex; flex-direction: column; gap: 0.4rem; width: 100%;">
+                                <div style="display: flex; flex-direction: column; gap: 0.4rem; width: 100%; justify-content: center; align-items: center;">
                                     <form method="POST" action="<%= `/organiser/event/${event.event_id}/publish` %>" style="margin: 0; width: 100%;">
                                         <button type="submit" class="btn btn-sm btn-primary-custom w-100">Publish</button>
                                     </form>
