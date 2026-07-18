@@ -105,8 +105,6 @@ button {
   text-shadow: none !important;
   text-decoration: none !important;
 }
-  text-decoration: underline;
-}
 
 /* ============================================================================
    NAVBAR / HEADER
@@ -124,6 +122,128 @@ button {
   font-weight: 600;
   font-size: 1.5rem;
   color: var(--color-primary) !important;
+}
+
+/* ============================================================================
+   DASHBOARD LAYOUT (Sidebar + Main Content)
+   ============================================================================ */
+
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  flex: 0 0 260px;
+  background: white;
+  border-right: 1px solid #F0F0F0;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.4rem;
+  color: var(--color-text);
+  margin-bottom: 0.25rem;
+}
+
+.sidebar-subtitle {
+  font-size: 0.85rem;
+  color: #999;
+  margin-bottom: 2.5rem;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--radius-button);
+  color: var(--color-text);
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+  background-color: var(--color-light-bg);
+  color: var(--color-text);
+  text-shadow: none;
+}
+
+.sidebar-link.active {
+  background-color: var(--color-primary);
+  color: white;
+  font-weight: 600;
+}
+
+.sidebar-link.active:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.sidebar-footer {
+  border-top: 1px solid #F0F0F0;
+  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.dashboard-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 2.5rem 3rem;
+}
+
+/* Responsive: collapse sidebar on smaller screens */
+@media (max-width: 900px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex: 0 0 auto;
+    height: auto;
+    position: relative;
+    padding: 1.25rem 1.5rem;
+    border-right: none;
+    border-bottom: 1px solid #F0F0F0;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .sidebar-subtitle {
+    margin-bottom: 1.25rem;
+  }
+
+  .sidebar-footer {
+    border-top: none;
+    margin-top: 1rem;
+    padding-top: 0;
+  }
+
+  .dashboard-main {
+    padding: 1.5rem;
+  }
 }
 
 /* ============================================================================
@@ -466,6 +586,18 @@ button {
   margin-bottom: 2rem;
 }
 
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 700px) {
+  .event-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .section-title {
   border-bottom: 2px solid var(--color-border);
   padding-bottom: 1rem;
@@ -628,7 +760,8 @@ button {
   border-radius: 0;
   box-shadow: var(--shadow-card);
   padding: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0;
+  height: 100%;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
   display: flex;
   justify-content: space-between;

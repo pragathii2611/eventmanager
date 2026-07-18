@@ -59,7 +59,7 @@
         }
 
         .detail-table thead {
-            background-color: rgba(92, 122, 107, 0.03);
+            background-color: rgba(168, 216, 216, 0.03);
             border-bottom: 1px solid var(--color-border);
         }
 
@@ -82,13 +82,13 @@
         }
 
         .detail-table tbody tr:hover {
-            background-color: rgba(92, 122, 107, 0.02);
+            background-color: rgba(168, 216, 216, 0.02);
         }
 
         .stat-badge {
             display: inline-block;
             padding: 0.4rem 0.8rem;
-            background-color: rgba(92, 122, 107, 0.1);
+            background-color: rgba(168, 216, 216, 0.1);
             border-radius: 6px;
             font-size: 0.85rem;
             font-weight: 600;
@@ -107,45 +107,52 @@
             margin: 2rem 0 1.5rem 0;
             color: var(--color-text);
         }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 550px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container-fluid">
-            <span class="navbar-brand">Event Manager</span>
-            <a href="/organiser/logout" class="btn btn-secondary-custom btn-sm">Logout</a>
-        </div>
-    </nav>
+    <div class="dashboard-layout">
+        <%- include('_sidebar', { activePage: 'analytics' }) %>
 
-    <div class="container mt-5">
-        <!-- Header -->
-        <div class="section">
-            <h1>Analytics Dashboard</h1>
-            <p class="text-muted">Real-time metrics across all your events</p>
-        </div>
+        <main class="dashboard-main">
+            <!-- Header -->
+            <div class="section">
+                <h1>Analytics Dashboard</h1>
+                <p class="text-muted">Real-time metrics across all your events</p>
+            </div>
 
-        <!-- Key Metrics -->
-        <div class="row">
-            <div class="col-md-3 col-sm-6">
+            <!-- Key Metrics -->
+            <div class="metrics-grid">
                 <div class="metric-card">
                     <p class="metric-label">Total Revenue</p>
                     <p class="metric-value">£<%= totalRevenue %></p>
                 </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
                 <div class="metric-card">
                     <p class="metric-label">Tickets Sold</p>
                     <p class="metric-value"><%= totalTicketsSold %></p>
                 </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
                 <div class="metric-card">
                     <p class="metric-label">Waitlist Conversion</p>
                     <p class="conversion-rate"><%= conversionRate %>%</p>
                     <p class="metric-label"><%= waitlistPromoted %> of <%= waitlistTotal %> promoted</p>
                 </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
                 <div class="metric-card">
                     <p class="metric-label">Most Popular Event</p>
                     <% if (mostPopular && mostPopular.tickets_sold > 0) { %>
@@ -156,7 +163,6 @@
                     <% } %>
                 </div>
             </div>
-        </div>
 
         <!-- Revenue by Event Chart -->
         <h2 class="section-heading">Revenue by Event</h2>
@@ -227,10 +233,7 @@
             </table>
         </div>
 
-        <!-- Back Button -->
-        <div class="section">
-            <a href="/organiser" class="btn btn-secondary-custom">← Back to Home</a>
-        </div>
+        </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -245,8 +248,8 @@
                     datasets: [{
                         label: 'Revenue (£)',
                         data: <%= JSON.stringify(chartData.revenues) %>,
-                        backgroundColor: 'rgba(92, 122, 107, 0.8)',
-                        borderColor: 'rgba(92, 122, 107, 1)',
+                        backgroundColor: 'rgba(168, 216, 216, 0.8)',
+                        borderColor: 'rgba(168, 216, 216, 1)',
                         borderWidth: 2,
                         borderRadius: 6
                     }]

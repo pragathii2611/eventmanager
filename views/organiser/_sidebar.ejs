@@ -1,0 +1,16 @@
+<aside class="sidebar">
+    <div>
+        <div class="sidebar-brand">Event Manager</div>
+        <div class="sidebar-subtitle">Organiser Dashboard</div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="/organiser" class="sidebar-link <%= typeof activePage !== 'undefined' && activePage === 'home' ? 'active' : '' %>">Events</a>
+        <a href="/organiser/analytics" class="sidebar-link <%= typeof activePage !== 'undefined' && activePage === 'analytics' ? 'active' : '' %>">Analytics</a>
+        <a href="/organiser/settings" class="sidebar-link <%= typeof activePage !== 'undefined' && activePage === 'settings' ? 'active' : '' %>">Site Settings</a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="/organiser/logout" class="btn btn-secondary-custom btn-sm" style="width: 100%; text-align: center;">Logout</a>
+    </div>
+</aside>

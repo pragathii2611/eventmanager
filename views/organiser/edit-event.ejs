@@ -11,20 +11,16 @@
     <script src="/main.js" defer></script>
 </head>
 <body>
-    <nav class="navbar">
-        <div class="container-fluid">
-            <span class="navbar-brand">Event Manager</span>
-            <a href="/organiser/logout" class="btn btn-secondary-custom btn-sm">Logout</a>
-        </div>
-    </nav>
+    <div class="dashboard-layout">
+        <%- include('_sidebar', { activePage: 'home' }) %>
 
-    <div class="container">
-        <div class="row">
-            <div class="col-md-8 offset-md-2">
+        <main class="dashboard-main">
+            <div class="section" style="max-width: 700px;">
                 <h1>Edit Event</h1>
                 <p class="text-muted">
                     Created: <%= new Date(event.created_at).toLocaleDateString() %>
                 </p>
+            </div>
 
                 <%
                     const fullTicket = ticketTypes.find(t => t.type === 'full');
@@ -39,7 +35,7 @@
                     const eventDateTimeLocal = eventDateTime.toISOString().slice(0, 16);
                 %>
 
-                <div class="card-custom">
+                <div class="card-custom" style="max-width: 700px;">
                     <form method="POST" action="<%= `/organiser/event/${event.event_id}` %>">
                         <!-- Event Details Section -->
                         <h3>Event Details</h3>
@@ -103,8 +99,7 @@
                         </div>
                     </form>
                 </div>
-            </div>
-        </div>
+        </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
