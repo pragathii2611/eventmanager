@@ -26,7 +26,7 @@
                     <h1><%= event.title %></h1>
                     <p><%= event.description %></p>
                     <p class="text-muted">
-                        <strong>📅 <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %></strong>
+                        <strong><%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %></strong>
                         <strong>at <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %></strong>
                     </p>
                 </div>
@@ -57,7 +57,7 @@
                                                 <p class="mb-2">
                                                     <strong>£<%= ticket.current_price ? ticket.current_price.toFixed(2) : ticket.price.toFixed(2) %> per ticket</strong>
                                                     <% if (ticket.current_price && ticket.current_price !== ticket.price) { %>
-                                                        <span style="font-size: 0.85rem; color: #E8A33D;">⚡ Dynamic pricing</span>
+                                                        <span style="font-size: 0.85rem; color: #E8A33D;">Dynamic pricing</span>
                                                     <% } %>
                                                 </p>
                                                 <div class="availability">
@@ -107,7 +107,7 @@
 
                     <% if (soldOutTickets.length > 0) { %>
                         <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--color-border);">
-                            <h3>💌 Join the Waitlist</h3>
+                            <h3>Join the Waitlist</h3>
                             <p class="text-muted">This event is selling fast! Join the waitlist for sold-out tickets and we'll let you know if spaces open up.</p>
 
                             <form method="POST" action="<%= `/attendee/event/${event.event_id}/waitlist` %>" style="margin-top: 1.5rem;">

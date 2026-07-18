@@ -225,7 +225,7 @@ router.post('/settings', authRequired, (req, res, next) => {
             return next(err);
         }
 
-        req.session.flash = { type: 'success', message: '✓ Site settings saved successfully!' };
+        req.session.flash = { type: 'success', message: 'Site settings saved successfully!' };
         res.redirect('/organiser');
     });
 });
@@ -375,7 +375,7 @@ router.post('/event/:id', authRequired, (req, res, next) => {
                         return next(err);
                     }
 
-                    req.session.flash = { type: 'success', message: '✓ Event saved successfully!' };
+                    req.session.flash = { type: 'success', message: 'Event saved successfully!' };
                     res.redirect('/organiser');
                 });
             });
@@ -403,7 +403,7 @@ router.post('/event/:id/publish', authRequired, (req, res, next) => {
             return next(err);
         }
 
-        req.session.flash = { type: 'success', message: '✓ Event published successfully!' };
+        req.session.flash = { type: 'success', message: 'Event published successfully!' };
         res.redirect('/organiser');
     });
 });
@@ -437,7 +437,7 @@ router.post('/event/:id/delete', authRequired, (req, res, next) => {
                 return next(err);
             }
 
-            req.session.flash = { type: 'success', message: '✓ Event deleted successfully.' };
+            req.session.flash = { type: 'success', message: 'Event deleted successfully.' };
             res.redirect('/organiser');
         });
     });

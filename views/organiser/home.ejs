@@ -46,7 +46,7 @@
                             <div class="card-ticket-main">
                                 <h4><%= event.title %></h4>
                                 <p class="text-muted mb-2">
-                                    📅 <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %>
+                                    <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %>
                                     at <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
                                 </p>
                                 <div>
@@ -84,7 +84,7 @@
                             <div class="card-ticket-main">
                                 <h4><%= event.title %></h4>
                                 <p class="text-muted mb-2">
-                                    📅 <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %>
+                                    <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %>
                                     at <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
                                 </p>
                                 <div>

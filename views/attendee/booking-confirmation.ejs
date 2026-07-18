@@ -161,7 +161,7 @@
                             📅 <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'long', month: 'long', day: 'numeric' }) %>
                         </p>
                         <p>
-                            🕐 <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
+                            <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
                         </p>
                     </div>
 

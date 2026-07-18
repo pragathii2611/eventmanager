@@ -373,7 +373,7 @@ router.post('/event/:id/waitlist', (req, res, next) => {
     const addToWaitlist = (index) => {
         if (index >= waitlistEntries.length) {
             // All waitlist entries added successfully
-            req.session.flash = { type: 'success', message: '✓ You\'ve been added to the waitlist! We\'ll notify you if tickets become available.' };
+            req.session.flash = { type: 'success', message: 'You\'ve been added to the waitlist! We\'ll notify you if tickets become available.' };
             res.redirect(`/attendee/event/${eventId}`);
             return;
         }
