@@ -31,10 +31,10 @@
             <h3 class="section-title">Upcoming Events</h3>
 
             <% if (events && events.length > 0) { %>
-                <% events.forEach(event => { %>
-                    <a href="<%= `/attendee/event/${event.event_id}` %>" style="text-decoration: none; color: inherit;">
+                <div class="event-grid">
+                    <% events.forEach(event => { %>
                         <div class="card-ticket-stub">
-                            <div class="card-ticket-main">
+                            <a href="<%= `/attendee/event/${event.event_id}` %>" class="card-ticket-main">
                                 <h4><%= event.title %></h4>
                                 <p class="text-muted mb-2">
                                     <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %>
@@ -43,14 +43,13 @@
                                 <div>
                                     <span class="badge-stamp published">Available</span>
                                 </div>
-                            </div>
+                            </a>
                             <div class="card-ticket-stub-section">
-                                <p style="font-size: 0.85rem; margin: 0; color: #999;">TAP</p>
-                                <p style="font-size: 1.2rem; font-weight: 600; color: var(--color-primary); margin: 0;">TO BOOK</p>
+                                <a href="<%= `/attendee/event/${event.event_id}` %>" class="btn btn-sm btn-primary-custom" style="width: 100%;">View &amp; Book</a>
                             </div>
                         </div>
-                    </a>
-                <% }); %>
+                    <% }); %>
+                </div>
             <% } else { %>
                 <div class="empty-state">
                     <p>No events scheduled right now.</p>
