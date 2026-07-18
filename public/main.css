@@ -1,6 +1,4 @@
-/* ============================================================================
-   DESIGN TOKENS & COLOR SYSTEM
-   ============================================================================ */
+/* Design Tokens & Color System */
 
 :root {
   /* Minimal 3-Color Pastel Palette */
@@ -29,9 +27,7 @@
   --font-body: 'Inter', sans-serif;
 }
 
-/* ============================================================================
-   GLOBAL STYLES
-   ============================================================================ */
+/* Global Styles */
 
 * {
   box-sizing: border-box;
@@ -106,9 +102,7 @@ button {
   text-decoration: none !important;
 }
 
-/* ============================================================================
-   NAVBAR / HEADER
-   ============================================================================ */
+/* Navbar / Header */
 
 .navbar {
   background: white;
@@ -124,9 +118,7 @@ button {
   color: var(--color-primary) !important;
 }
 
-/* ============================================================================
-   DASHBOARD LAYOUT (Sidebar + Main Content)
-   ============================================================================ */
+/* Dashboard layout: sidebar plus main content area */
 
 .dashboard-layout {
   display: flex;
@@ -259,9 +251,7 @@ button {
   }
 }
 
-/* ============================================================================
-   CARDS
-   ============================================================================ */
+/* Cards */
 
 .card-custom {
   background: white;
@@ -303,9 +293,7 @@ button {
   font-weight: 600;
 }
 
-/* ============================================================================
-   BUTTONS (Unified 3-Role System)
-   ============================================================================ */
+/* Buttons: primary, secondary and danger styles used everywhere */
 
 /* Primary button: Create/Save/Login/Publish/Book/Join Waitlist */
 .btn-primary,
@@ -406,9 +394,7 @@ button {
   flex-wrap: wrap;
 }
 
-/* ============================================================================
-   BADGES & STATUS INDICATORS
-   ============================================================================ */
+/* Badges & Status Indicators */
 
 .badge-status {
   display: inline-block;
@@ -453,9 +439,7 @@ button {
   color: white;
 }
 
-/* ============================================================================
-   FORMS & INPUTS
-   ============================================================================ */
+/* Forms & Inputs */
 
 .form-control,
 .form-select {
@@ -501,9 +485,7 @@ button {
   margin-bottom: 1rem;
 }
 
-/* ============================================================================
-   TABLES
-   ============================================================================ */
+/* Tables */
 
 .table {
   margin-bottom: 1.5rem;
@@ -533,9 +515,7 @@ button {
   background-color: rgba(250, 248, 244, 0.8);
 }
 
-/* ============================================================================
-   ALERTS & EMPTY STATES
-   ============================================================================ */
+/* Alerts & Empty States */
 
 .alert {
   border-radius: var(--radius-button);
@@ -581,9 +561,7 @@ button {
   opacity: 0.5;
 }
 
-/* ============================================================================
-   LAYOUT & SPACING
-   ============================================================================ */
+/* Layout & Spacing */
 
 .container-lg,
 .container {
@@ -617,9 +595,7 @@ button {
   margin-bottom: 1.5rem;
 }
 
-/* ============================================================================
-   UTILITY CLASSES
-   ============================================================================ */
+/* Utility Classes */
 
 .text-muted {
   color: #999999 !important;
@@ -665,9 +641,7 @@ button {
   padding: 1.5rem;
 }
 
-/* ============================================================================
-   RESPONSIVE DESIGN
-   ============================================================================ */
+/* Responsive Design */
 
 @media (max-width: 576px) {
   h1 {
@@ -707,9 +681,7 @@ button {
   }
 }
 
-/* ============================================================================
-   SPECIFIC COMPONENTS
-   ============================================================================ */
+/* Specific Components */
 
 /* List group items styled as cards */
 .list-group-item {
@@ -763,9 +735,7 @@ button {
   color: var(--color-danger);
 }
 
-/* ============================================================================
-   TICKET-STUB CARDS (redesigned event cards)
-   ============================================================================ */
+/* Event card styles */
 
 .card-ticket-stub {
   background: white;
@@ -889,9 +859,7 @@ a.card-ticket-main:hover h4 {
   color: var(--color-text);
 }
 
-/* ============================================================================
-   STAMP-STYLE STATUS BADGES
-   ============================================================================ */
+/* Stamp-style Status Badges */
 
 .badge-stamp {
   display: inline-block;
@@ -922,9 +890,7 @@ a.card-ticket-main:hover h4 {
 
 /* Cancelled badges keep original struck-through style (not stamped) */
 
-/* ============================================================================
-   PAGE-LOAD FADE-IN ANIMATION
-   ============================================================================ */
+/* Page-load Fade-in Animation */
 
 @keyframes fadeInDown {
   from {
@@ -941,9 +907,7 @@ body {
   animation: fadeInDown 0.3s ease-out;
 }
 
-/* ============================================================================
-   TOAST NOTIFICATIONS
-   ============================================================================ */
+/* Toast Notifications */
 
 .toast-container {
   position: fixed;

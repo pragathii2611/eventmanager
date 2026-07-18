@@ -1,8 +1,5 @@
-// ============================================================================
-// TOAST NOTIFICATIONS
-// ============================================================================
-
-// Show a toast notification
+// Shows a small popup message in the corner of the screen (used for
+// success/error messages after actions like saving or booking)
 function showToast(message, type = 'success', duration = 4000) {
   const container = document.getElementById('toast-container') || createToastContainer();
 
@@ -15,13 +12,13 @@ function showToast(message, type = 'success', duration = 4000) {
 
   container.appendChild(toast);
 
-  // Add method to toast for removal
+  // Lets us close the toast early by clicking it
   toast.removeToast = function() {
     this.classList.add('fade-out');
     setTimeout(() => this.remove(), 300);
   };
 
-  // Auto-dismiss after duration
+  // Automatically remove the toast after a few seconds
   setTimeout(() => {
     if (toast.parentElement) {
       toast.removeToast();
@@ -37,11 +34,9 @@ function createToastContainer() {
   return container;
 }
 
-// ============================================================================
-// BUTTON LOADING STATE
-// ============================================================================
-
-// Add loading state to form submit buttons
+// When any form is submitted, disable the submit button and change its
+// text to something like "Saving..." so the user knows it's working and
+// can't accidentally click submit twice
 document.addEventListener('DOMContentLoaded', function() {
   const forms = document.querySelectorAll('form');
 
@@ -50,11 +45,10 @@ document.addEventListener('DOMContentLoaded', function() {
       const submitBtn = this.querySelector('button[type="submit"]');
 
       if (submitBtn) {
-        // Store original text
         const originalText = submitBtn.textContent;
         const originalHTML = submitBtn.innerHTML;
 
-        // Determine loading text based on button context
+        // Pick a loading message that matches what the button says
         let loadingText = 'Saving...';
         if (originalText.includes('Book') || originalText.includes('book')) {
           loadingText = 'Booking...';
@@ -66,19 +60,18 @@ document.addEventListener('DOMContentLoaded', function() {
           loadingText = 'Joining...';
         }
 
-        // Disable button and show loading state
         submitBtn.disabled = true;
         submitBtn.style.opacity = '0.7';
         submitBtn.style.pointerEvents = 'none';
         submitBtn.textContent = loadingText;
 
-        // Note: button state is reset when page redirects/reloads
-        // This provides brief visual feedback before navigation
+        // The button goes back to normal automatically once the page
+        // redirects or reloads after the form submits
       }
     });
   });
 
-  // Close toast notifications on click
+  // Let the user close a toast by clicking its X button
   document.addEventListener('click', function(e) {
     if (e.target.classList.contains('close-btn')) {
       e.target.parentElement.removeToast?.();

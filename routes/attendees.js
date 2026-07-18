@@ -1,20 +1,19 @@
 /**
  * routes/attendees.js
- * Attendee-side routes: home page (event listing), event detail page, booking
+ * All the routes for the attendee side of the app: browsing events,
+ * viewing a single event, booking tickets, joining the waitlist, and
+ * showing the booking confirmation page.
  */
 
 const express = require('express');
 const router = express.Router();
 const { calculateCurrentPrice } = require('../lib/pricing');
 
-// ============================================================================
-// CALENDAR EXPORT (.ics) HELPERS
-// ============================================================================
-
 /**
  * escapeICSText(text)
- * Escapes commas, semicolons, backslashes and newlines per the iCalendar
- * spec (RFC 5545) so event titles/descriptions can't break the file format.
+ * Calendar files (.ics) use commas, semicolons and newlines as special
+ * characters, so if an event title or description contains one of these
+ * it needs to be escaped first or it will break the file.
  */
 function escapeICSText(text) {
     return String(text)
@@ -26,11 +25,10 @@ function escapeICSText(text) {
 
 /**
  * formatICSDateTime(sqliteDateStr, addHours)
- * Converts a SQLite "YYYY-MM-DD HH:MM:SS" string into iCalendar's
- * "YYYYMMDDTHHMMSS" floating-time format, optionally adding N hours
- * (used for DTEND). Arithmetic runs through Date.UTC so hour overflow
- * (e.g. 23:30 + 1hr) rolls into the next day correctly, without ever
- * touching the server's local timezone.
+ * Turns a date from the database (e.g. "2026-07-15 09:00:00") into the
+ * date format that .ics calendar files expect (e.g. "20260715T090000").
+ * Can also add extra hours on, which is used to work out the end time
+ * of the event since we only store a start time in the database.
  */
 function formatICSDateTime(sqliteDateStr, addHours) {
     const [datePart, timePart] = sqliteDateStr.split(' ');
@@ -48,17 +46,17 @@ function formatICSDateTime(sqliteDateStr, addHours) {
 
 /**
  * GET /attendee/event/:id/calendar.ics
- * Generates a downloadable .ics file for a published event so attendees
- * can add it to Google Calendar, Outlook, Apple Calendar, etc.
- * Events default to a 1-hour duration (no end time stored in the schema).
- * Inputs: event_id from URL
- * Outputs: text/calendar file download, or 404 if event doesn't exist
+ * Lets an attendee download the event as a calendar file so they can
+ * add it to Google Calendar, Outlook, Apple Calendar, etc.
+ * Since we don't store an end time in the database, the event is
+ * assumed to last 1 hour.
+ * Inputs: event_id from the URL
+ * Outputs: a downloadable .ics file, or 404 if the event doesn't exist
  */
 router.get('/event/:id/calendar.ics', (req, res, next) => {
     const eventId = req.params.id;
 
-    // Query: get event details for the .ics file; only published events are
-    // exportable (drafts aren't visible to attendees anywhere else either)
+    // Only published events can be downloaded, same as everywhere else
     const eventQuery = "SELECT event_id, title, description, event_date FROM events WHERE event_id = ? AND status = 'published'";
 
     global.db.get(eventQuery, [eventId], function(err, event) {
@@ -96,18 +94,15 @@ router.get('/event/:id/calendar.ics', (req, res, next) => {
     });
 });
 
-// ============================================================================
-// ATTENDEE HOME PAGE
-// ============================================================================
-
 /**
  * GET /attendee
- * Attendee home page: list of published events ordered by date (soonest first)
+ * The attendee home page. Shows the site name/description and a list
+ * of all published events, soonest first.
  * Inputs: none
- * Outputs: rendered attendee/home.ejs with site info and event list
+ * Outputs: renders attendee/home.ejs with the site info and event list
  */
 router.get('/', (req, res, next) => {
-    // Query 1: Get site settings
+    // First get the site name and description to show at the top of the page
     const settingsQuery = "SELECT site_name, site_description FROM site_settings WHERE settings_id = 1";
 
     global.db.get(settingsQuery, function(err, settings) {
@@ -115,7 +110,7 @@ router.get('/', (req, res, next) => {
             return next(err);
         }
 
-        // Query 2: Get all published events ordered by event_date ASC (soonest first)
+        // Then get every published event, soonest event first
         const eventsQuery = `
             SELECT event_id, title, event_date
             FROM events
@@ -128,7 +123,7 @@ router.get('/', (req, res, next) => {
                 return next(err);
             }
 
-            // Get flash message if it exists
+            // Show a success/error message left over from the last action, if any
             const flash = req.session.flash;
             delete req.session.flash;
 
@@ -142,20 +137,17 @@ router.get('/', (req, res, next) => {
     });
 });
 
-// ============================================================================
-// ATTENDEE EVENT PAGE & BOOKING
-// ============================================================================
-
 /**
  * GET /attendee/event/:id
- * Event detail page: show event info, ticket types/prices, booking form
- * Inputs: event_id from URL
- * Outputs: rendered attendee/event.ejs with event and ticket type info
+ * Shows the details for one event, including its ticket types and
+ * current prices, plus the booking form.
+ * Inputs: event_id from the URL
+ * Outputs: renders attendee/event.ejs with the event and ticket info
  */
 router.get('/event/:id', (req, res, next) => {
     const eventId = req.params.id;
 
-    // Query 1: Get event details
+    // Get the event itself (must be published, not a draft)
     const eventQuery = `
         SELECT * FROM events
         WHERE event_id = ? AND status = 'published'
@@ -170,8 +162,8 @@ router.get('/event/:id', (req, res, next) => {
             return res.status(404).send('Event not found');
         }
 
-        // Query 2: Get ticket types for this event with remaining availability
-        // remaining = quantity_total - SUM(active bookings)
+        // Get each ticket type for this event, working out how many are
+        // left by subtracting active bookings from the total quantity
         const ticketsQuery = `
             SELECT
                 t.ticket_type_id,
@@ -191,16 +183,15 @@ router.get('/event/:id', (req, res, next) => {
                 return next(err);
             }
 
-            // Calculate current tiered price for each ticket type
+            // Work out the current dynamic price for each ticket type before
+            // rendering the page (waits until all of them are done)
             let pricesCalculated = 0;
             ticketTypes.forEach(ticket => {
                 calculateCurrentPrice(ticket.ticket_type_id, function(err, tieredPrice) {
-                    ticket.current_price = tieredPrice; // null if sold out, otherwise tiered price
+                    ticket.current_price = tieredPrice; // null means sold out
                     pricesCalculated++;
 
-                    // Once all prices calculated, render
                     if (pricesCalculated === ticketTypes.length) {
-                        // Get flash message if it exists
                         const flash = req.session.flash;
                         delete req.session.flash;
 
@@ -213,7 +204,7 @@ router.get('/event/:id', (req, res, next) => {
                 });
             });
 
-            // Handle edge case: no ticket types
+            // If there are no ticket types at all, just render straight away
             if (ticketTypes.length === 0) {
                 const flash = req.session.flash;
                 delete req.session.flash;
@@ -229,17 +220,19 @@ router.get('/event/:id', (req, res, next) => {
 
 /**
  * POST /attendee/event/:id/book
- * Process ticket booking: create booking records, decrement available tickets
- * Inputs: event_id from URL, req.body with attendee_name and quantity per ticket type
- * Outputs: if validation passes, create bookings and redirect to confirmation
- *          if validation fails (not enough tickets), re-render with error
+ * Books tickets for an attendee. Checks there's enough availability
+ * before creating the booking rows, all wrapped in a database
+ * transaction so two people booking at the same time can't oversell.
+ * Inputs: event_id from the URL, req.body with attendee_name and a
+ *         quantity field for each ticket type (e.g. qty_1, qty_2)
+ * Outputs: creates the booking(s) and redirects to the confirmation
+ *          page, or sends an error if there aren't enough tickets
  */
 router.post('/event/:id/book', (req, res, next) => {
     const eventId = req.params.id;
     const attendeeName = req.body.attendee_name;
 
-    // Collect booking data: {ticket_type_id_X: quantity, ...}
-    // Parse from form data
+    // Pull out every "qty_X" field from the form into a simple list
     const bookings = [];
     for (const [key, value] of Object.entries(req.body)) {
         if (key.startsWith('qty_')) {
@@ -255,19 +248,17 @@ router.post('/event/:id/book', (req, res, next) => {
         return res.status(400).send('Please enter name and select at least one ticket');
     }
 
-    // Validate availability for each ticket type
-    // This is a simplified check; in production, use transactions
     let validationPassed = true;
     let validationErrors = [];
 
-    // For each booking, check availability
+    // Goes through each requested ticket type one at a time and checks
+    // there are actually enough tickets left before booking anything
     const checkAvailability = (index) => {
         if (index >= bookings.length) {
             if (validationPassed) {
-                // All validations passed; create bookings
                 createBookings(0);
             } else {
-                // Validation failed; rollback transaction and return error
+                // Not enough tickets somewhere, so undo the transaction
                 global.db.run('ROLLBACK', function() {
                     res.status(400).send('Not enough tickets available: ' + validationErrors.join(', '));
                 });
@@ -277,9 +268,7 @@ router.post('/event/:id/book', (req, res, next) => {
 
         const booking = bookings[index];
 
-        // Query: re-check live remaining availability for this ticket type
-        // right before inserting, inside the transaction started below —
-        // this is what stops two simultaneous bookings from overselling
+        // Check how many tickets are actually still available right now
         const availQuery = `
             SELECT
                 t.quantity_total,
@@ -305,17 +294,18 @@ router.post('/event/:id/book', (req, res, next) => {
         });
     };
 
-    // Create booking records (wrapped in transaction for safety)
+    // Once availability has been confirmed, actually create the bookings
     const createdBookings = [];
     const createBookings = (index) => {
         if (index >= bookings.length) {
-            // All bookings created successfully; commit transaction
+            // All bookings created OK, so save the transaction
             global.db.run('COMMIT', function(err) {
                 if (err) {
                     return next(err);
                 }
 
-                // Store confirmation data in session for flash display
+                // Save the details in the session so the confirmation
+                // page can show them after the redirect
                 req.session.bookingConfirmation = {
                     attendeeName: attendeeName,
                     bookings: createdBookings,
@@ -328,23 +318,19 @@ router.post('/event/:id/book', (req, res, next) => {
 
         const booking = bookings[index];
 
-        // Calculate current tiered price at booking time
+        // Work out today's price for this ticket type before saving it
         calculateCurrentPrice(booking.ticketTypeId, function(err, tieredPrice) {
             if (err) {
-                // Rollback on error
                 global.db.run('ROLLBACK', function() {
                     return next(err);
                 });
                 return;
             }
 
-            // tieredPrice is null if sold out, but we already validated availability
             const pricePaid = tieredPrice || 0;
 
-            // Query: create the booking row, storing the tiered price
-            // calculated above as price_paid — this is a snapshot, never
-            // recalculated later, so historical bookings keep the price the
-            // attendee actually paid even if the tier changes afterwards
+            // Save the price paid on the booking itself, so it never
+            // changes later even if the ticket price goes up afterwards
             const insertQuery = `
                 INSERT INTO bookings (event_id, ticket_type_id, attendee_name, quantity, price_paid, booked_at)
                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
@@ -352,14 +338,12 @@ router.post('/event/:id/book', (req, res, next) => {
 
             global.db.run(insertQuery, [eventId, booking.ticketTypeId, attendeeName, booking.quantity, pricePaid], function(err) {
                 if (err) {
-                    // Rollback on error
                     global.db.run('ROLLBACK', function() {
                         return next(err);
                     });
                     return;
                 }
 
-                // Store created booking info for confirmation page
                 createdBookings.push({
                     ticketTypeId: booking.ticketTypeId,
                     quantity: booking.quantity,
@@ -372,7 +356,8 @@ router.post('/event/:id/book', (req, res, next) => {
         });
     };
 
-    // Start transaction before validation
+    // Everything above happens inside one transaction, so if two people
+    // book at the same time they can't both grab the last ticket
     global.db.run('BEGIN TRANSACTION', function(err) {
         if (err) {
             return next(err);
@@ -383,16 +368,18 @@ router.post('/event/:id/book', (req, res, next) => {
 
 /**
  * POST /attendee/event/:id/waitlist
- * Join the waitlist for sold-out ticket types
- * Inputs: event_id from URL, req.body with attendee_name and waitlist_qty_X for each ticket type
- * Outputs: create waitlist entries, redirect to event page with confirmation
+ * Adds an attendee to the waitlist for one or more sold-out ticket types.
+ * Inputs: event_id from the URL, req.body with attendee_name,
+ *         attendee_email, and a quantity field per ticket type
+ *         (e.g. waitlist_qty_1)
+ * Outputs: creates the waitlist entries and redirects back to the event page
  */
 router.post('/event/:id/waitlist', (req, res, next) => {
     const eventId = req.params.id;
     const attendeeName = req.body.waitlist_name;
     const attendeeEmail = req.body.waitlist_email;
 
-    // Collect waitlist data: {ticket_type_id_X: quantity, ...}
+    // Pull out every "waitlist_qty_X" field from the form
     const waitlistEntries = [];
     for (const [key, value] of Object.entries(req.body)) {
         if (key.startsWith('waitlist_qty_')) {
@@ -408,10 +395,10 @@ router.post('/event/:id/waitlist', (req, res, next) => {
         return res.status(400).send('Please enter name, email, and select at least one ticket type');
     }
 
-    // For each waitlist entry, get the next position and insert
+    // Add each waitlist entry one at a time, giving each one the next
+    // free queue position for that ticket type
     const addToWaitlist = (index) => {
         if (index >= waitlistEntries.length) {
-            // All waitlist entries added successfully
             req.session.flash = { type: 'success', message: 'You\'ve been added to the waitlist! We\'ll notify you if tickets become available.' };
             res.redirect(`/attendee/event/${eventId}`);
             return;
@@ -419,7 +406,7 @@ router.post('/event/:id/waitlist', (req, res, next) => {
 
         const entry = waitlistEntries[index];
 
-        // Query 1: Get the next position for this ticket type
+        // Work out the next queue position for this ticket type
         const maxPosQuery = `
             SELECT COALESCE(MAX(position), 0) + 1 as next_position
             FROM waitlist
@@ -433,7 +420,7 @@ router.post('/event/:id/waitlist', (req, res, next) => {
 
             const nextPosition = posRow.next_position;
 
-            // Query 2: Insert into waitlist
+            // Add the attendee to the waitlist at that position
             const insertQuery = `
                 INSERT INTO waitlist (event_id, ticket_type_id, attendee_name, attendee_email, requested_quantity, position, joined_at)
                 VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
@@ -449,17 +436,17 @@ router.post('/event/:id/waitlist', (req, res, next) => {
         });
     };
 
-    // Start adding waitlist entries
     addToWaitlist(0);
 });
 
 /**
  * GET /attendee/booking-confirmation
- * Display booking confirmation as a styled ticket stub
- * Inputs: none (reads req.session.bookingConfirmation set by POST /event/:id/book)
- * Outputs: rendered attendee/booking-confirmation.ejs with event, bookings,
- *          total price, and QR/reference data; redirects to /attendee if no
- *          confirmation data is present in the session
+ * Shows the confirmation page after a booking, with a QR code and
+ * booking reference. Reads the booking info that was saved into the
+ * session by the /book route just before redirecting here.
+ * Inputs: none (uses req.session.bookingConfirmation)
+ * Outputs: renders attendee/booking-confirmation.ejs, or redirects to
+ *          the attendee home page if there's nothing to show
  */
 router.get('/booking-confirmation', (req, res, next) => {
     const confirmation = req.session.bookingConfirmation;
@@ -470,7 +457,7 @@ router.get('/booking-confirmation', (req, res, next) => {
 
     const eventId = confirmation.eventId;
 
-    // Get event and ticket details for confirmation display
+    // Get the event details to show on the confirmation page
     const eventQuery = `
         SELECT e.event_id, e.title, e.event_date, e.description
         FROM events e
@@ -486,7 +473,7 @@ router.get('/booking-confirmation', (req, res, next) => {
             return res.redirect('/attendee');
         }
 
-        // Get ticket type details for each booking
+        // Get the ticket type names to match up against each booking
         const ticketQuery = `
             SELECT ticket_type_id, type, price
             FROM ticket_types
@@ -498,10 +485,11 @@ router.get('/booking-confirmation', (req, res, next) => {
                 return next(err);
             }
 
-            // Map ticket info to bookings (use price_paid, not current price)
+            // Combine the ticket type name with each booking, using the
+            // price the attendee actually paid rather than today's price
             const bookingDetails = confirmation.bookings.map(booking => {
                 const ticket = tickets.find(t => t.ticket_type_id === booking.ticketTypeId);
-                const pricePaidPerTicket = booking.pricePaid; // Price paid at booking time
+                const pricePaidPerTicket = booking.pricePaid;
                 return {
                     ...booking,
                     ticketType: ticket ? ticket.type : 'Unknown',
@@ -510,11 +498,11 @@ router.get('/booking-confirmation', (req, res, next) => {
                 };
             });
 
-            // Clear session confirmation after displaying
+            // The confirmation data is only needed once, so clear it now
             delete req.session.bookingConfirmation;
 
-            // Build a stable booking reference from the first booking's ID
-            // (not Date.now() — that changes on every reload/render)
+            // Make up a simple booking reference from the first booking's
+            // ID, so it stays the same if the page is refreshed
             const reference = `EVT${eventId}-${String(bookingDetails[0].bookingId).padStart(6, '0')}`;
 
             res.render('attendee/booking-confirmation', {
