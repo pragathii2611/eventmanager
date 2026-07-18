@@ -10,7 +10,6 @@
 // DEPENDENCIES
 // ============================================================================
 const express = require('express');
-const bodyParser = require('body-parser');
 const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
@@ -21,8 +20,10 @@ const bcrypt = require('bcryptjs');
 const app = express();
 const port = 3000;
 
-// Middleware: body parsing
-app.use(bodyParser.urlencoded({ extended: true }));
+// Middleware: body parsing (Express 4.16+ has this built in; no separate
+// body-parser package needed — avoids relying on it as an undeclared
+// transitive dependency of express itself)
+app.use(express.urlencoded({ extended: true }));
 
 // Middleware: session management
 app.use(session({
@@ -112,6 +113,21 @@ const attendeesRoutes = require('./routes/attendees');
 
 app.use('/organiser', organisersRoutes);
 app.use('/attendee', attendeesRoutes);
+
+// ============================================================================
+// ERROR HANDLING
+// ============================================================================
+
+/**
+ * Global error handler — every route calls next(err) on a DB failure, but
+ * without a handler here Express falls back to its own default handler,
+ * which sends a full stack trace (file paths, line numbers, query text) to
+ * the browser. Catch it here and log server-side instead.
+ */
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).send('Something went wrong. Please try again.');
+});
 
 // ============================================================================
 // SERVER START
