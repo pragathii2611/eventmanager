@@ -83,14 +83,28 @@ p {
 
 a {
   color: var(--color-primary);
-  text-decoration: none;
+  text-decoration: none !important;
   transition: all 0.3s ease;
 }
 
 a:hover {
   color: var(--color-primary-hover);
-  text-decoration: none;
+  text-decoration: none !important;
   text-shadow: 0 0 8px rgba(168, 216, 216, 0.4);
+}
+
+/* Exclude buttons from link glow effect */
+a.btn,
+a.btn-primary,
+a.btn-primary-custom,
+a.btn-secondary,
+a.btn-secondary-custom,
+a.btn-danger,
+a.btn-danger-custom,
+button {
+  text-shadow: none !important;
+  text-decoration: none !important;
+}
   text-decoration: underline;
 }
 
