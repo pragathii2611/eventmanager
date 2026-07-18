@@ -8,6 +8,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const { calculateCurrentPrice } = require('../lib/pricing');
 
 // ============================================================================
 // AUTHENTICATION MIDDLEWARE
@@ -328,8 +329,29 @@ router.post('/event/:id', authRequired, (req, res, next) => {
         return res.status(400).send('Title and date are required');
     }
 
-    // Convert datetime-local to ISO format SQLite expects (YYYY-MM-DD HH:MM:SS)
+    // Validate event_date parses to a real date. The form's browser-side
+    // "required" attribute doesn't stop a direct POST (e.g. curl/Postman)
+    // from sending garbage here, and new Date(garbage).toISOString() throws
+    // a RangeError rather than failing gracefully.
     const eventDateTime = new Date(event_date);
+    if (isNaN(eventDateTime.getTime())) {
+        return res.status(400).send('Invalid event date');
+    }
+
+    // Validate ticket price/quantity fields are non-negative numbers. These
+    // rely only on HTML5 min/required attributes client-side, which a
+    // direct API call can bypass entirely.
+    const parsedFullPrice = parseFloat(full_price);
+    const parsedFullQty = parseInt(full_qty, 10);
+    const parsedConcessionPrice = parseFloat(concession_price);
+    const parsedConcessionQty = parseInt(concession_qty, 10);
+
+    const ticketFields = [parsedFullPrice, parsedFullQty, parsedConcessionPrice, parsedConcessionQty];
+    if (ticketFields.some(n => isNaN(n) || n < 0)) {
+        return res.status(400).send('Ticket prices and quantities must be non-negative numbers');
+    }
+
+    // Convert datetime-local to ISO format SQLite expects (YYYY-MM-DD HH:MM:SS)
     const sqlEventDate = eventDateTime.toISOString().replace('T', ' ').slice(0, 19);
 
     // Update event details and last_modified_at
@@ -359,7 +381,7 @@ router.post('/event/:id', authRequired, (req, res, next) => {
                 VALUES (?, 'full', ?, ?)
             `;
 
-            global.db.run(insertFullQuery, [eventId, full_price, full_qty], function(err) {
+            global.db.run(insertFullQuery, [eventId, parsedFullPrice, parsedFullQty], function(err) {
                 if (err) {
                     return next(err);
                 }
@@ -370,7 +392,7 @@ router.post('/event/:id', authRequired, (req, res, next) => {
                     VALUES (?, 'concession', ?, ?)
                 `;
 
-                global.db.run(insertConcessionQuery, [eventId, concession_price, concession_qty], function(err) {
+                global.db.run(insertConcessionQuery, [eventId, parsedConcessionPrice, parsedConcessionQty], function(err) {
                     if (err) {
                         return next(err);
                     }
@@ -444,51 +466,10 @@ router.post('/event/:id/delete', authRequired, (req, res, next) => {
 });
 
 // ============================================================================
-// DYNAMIC PRICING HELPER (shared with attendees.js)
+// DYNAMIC PRICING: calculateCurrentPrice() is imported from ../lib/pricing
+// (previously duplicated here and in attendees.js — now a single source
+// of truth used by both booking/event-detail and waitlist promotion)
 // ============================================================================
-
-/**
- * calculateCurrentPrice(ticketTypeId, callback)
- * Calculates the current tiered price for a ticket type based on % sold
- */
-function calculateCurrentPrice(ticketTypeId, callback) {
-    const query = `
-        SELECT
-            t.price as base_price,
-            t.quantity_total,
-            COALESCE(SUM(CASE WHEN b.status = 'active' THEN b.quantity ELSE 0 END), 0) as sold,
-            t.quantity_total - COALESCE(SUM(CASE WHEN b.status = 'active' THEN b.quantity ELSE 0 END), 0) as remaining
-        FROM ticket_types t
-        LEFT JOIN bookings b ON t.ticket_type_id = b.ticket_type_id
-        WHERE t.ticket_type_id = ?
-        GROUP BY t.ticket_type_id
-    `;
-
-    global.db.get(query, [ticketTypeId], function(err, row) {
-        if (err) {
-            return callback(err, null);
-        }
-
-        if (!row) {
-            return callback(null, null);
-        }
-
-        if (row.remaining === 0) {
-            return callback(null, null);
-        }
-
-        const percentSold = (row.sold / row.quantity_total) * 100;
-        let multiplier = 1.0;
-        if (percentSold >= 80) {
-            multiplier = 1.3;
-        } else if (percentSold >= 50) {
-            multiplier = 1.15;
-        }
-
-        const tieredPrice = Math.round(row.base_price * multiplier * 100) / 100;
-        callback(null, tieredPrice);
-    });
-}
 
 // ============================================================================
 // GUEST LIST & BOOKING MANAGEMENT
@@ -811,6 +792,15 @@ router.get('/analytics', authRequired, (req, res, next) => {
                             ticketsSold: eventRevenues.map(e => e.tickets_sold)
                         };
 
+                        // Pre-serialize and escape here rather than in the view.
+                        // Event titles are organiser-entered text; JSON.stringify
+                        // correctly escapes quotes/control characters for JS string
+                        // safety, but NOT the literal substring "</script>" — if a
+                        // title contained that text, embedding raw JSON inside a
+                        // <script> tag would let it prematurely close the block.
+                        // Escaping "<" to its unicode escape closes that gap.
+                        const chartDataJSON = JSON.stringify(chartData).replace(/</g, '\\u003c');
+
                         res.render('organiser/analytics', {
                             totalRevenue: totalData.total_revenue.toFixed(2),
                             totalTicketsSold: totalData.total_tickets_sold,
@@ -820,7 +810,7 @@ router.get('/analytics', authRequired, (req, res, next) => {
                             waitlistTotal: waitlistData.total_waitlist_entries,
                             conversionRate: conversionRate,
                             mostPopular: mostPopular,
-                            chartData: chartData
+                            chartDataJSON: chartDataJSON
                         });
                     });
                 });
