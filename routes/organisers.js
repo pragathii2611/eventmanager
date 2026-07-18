@@ -184,6 +184,7 @@ router.get('/', authRequired, (req, res, next) => {
  * Outputs: rendered organiser/settings.ejs with current settings
  */
 router.get('/settings', authRequired, (req, res, next) => {
+    // Query: fetch the single site_settings row to pre-fill the form
     const query = "SELECT site_name, site_description FROM site_settings WHERE settings_id = 1";
 
     global.db.get(query, function(err, row) {
@@ -248,6 +249,8 @@ router.get('/event/new', authRequired, (req, res, next) => {
     tomorrow.setHours(18, 0, 0, 0);
     const defaultEventDate = tomorrow.toISOString().replace('T', ' ').slice(0, 19);
 
+    // Query: create a placeholder draft event so we have an event_id to
+    // redirect to; the organiser fills in the real title/date on the edit page
     const query = "INSERT INTO events (title, event_date, status) VALUES ('Untitled Event', ?, 'draft')";
 
     global.db.run(query, [defaultEventDate], function(err) {
@@ -414,6 +417,8 @@ router.post('/event/:id', authRequired, (req, res, next) => {
 router.post('/event/:id/publish', authRequired, (req, res, next) => {
     const eventId = req.params.id;
 
+    // Query: flip status to 'published' and stamp published_at so the
+    // organiser home page can show both created_at and published_at
     const query = `
         UPDATE events
         SET status = 'published', published_at = CURRENT_TIMESTAMP

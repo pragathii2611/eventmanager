@@ -57,6 +57,8 @@ function formatICSDateTime(sqliteDateStr, addHours) {
 router.get('/event/:id/calendar.ics', (req, res, next) => {
     const eventId = req.params.id;
 
+    // Query: get event details for the .ics file; only published events are
+    // exportable (drafts aren't visible to attendees anywhere else either)
     const eventQuery = "SELECT event_id, title, description, event_date FROM events WHERE event_id = ? AND status = 'published'";
 
     global.db.get(eventQuery, [eventId], function(err, event) {
@@ -274,6 +276,10 @@ router.post('/event/:id/book', (req, res, next) => {
         }
 
         const booking = bookings[index];
+
+        // Query: re-check live remaining availability for this ticket type
+        // right before inserting, inside the transaction started below —
+        // this is what stops two simultaneous bookings from overselling
         const availQuery = `
             SELECT
                 t.quantity_total,
@@ -335,6 +341,10 @@ router.post('/event/:id/book', (req, res, next) => {
             // tieredPrice is null if sold out, but we already validated availability
             const pricePaid = tieredPrice || 0;
 
+            // Query: create the booking row, storing the tiered price
+            // calculated above as price_paid — this is a snapshot, never
+            // recalculated later, so historical bookings keep the price the
+            // attendee actually paid even if the tier changes afterwards
             const insertQuery = `
                 INSERT INTO bookings (event_id, ticket_type_id, attendee_name, quantity, price_paid, booked_at)
                 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
@@ -446,7 +456,10 @@ router.post('/event/:id/waitlist', (req, res, next) => {
 /**
  * GET /attendee/booking-confirmation
  * Display booking confirmation as a styled ticket stub
- * Retrieves confirmation data from session and renders confirmation view
+ * Inputs: none (reads req.session.bookingConfirmation set by POST /event/:id/book)
+ * Outputs: rendered attendee/booking-confirmation.ejs with event, bookings,
+ *          total price, and QR/reference data; redirects to /attendee if no
+ *          confirmation data is present in the session
  */
 router.get('/booking-confirmation', (req, res, next) => {
     const confirmation = req.session.bookingConfirmation;
