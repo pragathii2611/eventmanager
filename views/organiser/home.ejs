@@ -17,6 +17,7 @@
         <main class="dashboard-main">
             <!-- Header -->
             <div class="section">
+                <h6 class="page-kicker">Organiser Home Page</h6>
                 <h1><%= site_name %></h1>
                 <p class="text-muted"><%= site_description %></p>
             </div>
@@ -35,6 +36,15 @@
                 <% if (publishedEvents && publishedEvents.length > 0) { %>
                     <div class="event-grid">
                         <% publishedEvents.forEach(event => { %>
+                            <%
+                                // Parse "full:2, concession:3" into a readable "Full: 2, Concession: 3"
+                                const ticketSummary = event.ticket_info
+                                    ? event.ticket_info.split(', ').map(pair => {
+                                        const [type, qty] = pair.split(':');
+                                        return `${type.charAt(0).toUpperCase() + type.slice(1)}: ${qty}`;
+                                    }).join(' &middot; ')
+                                    : 'No tickets configured';
+                            %>
                             <div class="card-ticket-stub">
                                 <a href="<%= `/organiser/event/${event.event_id}/guests` %>" class="card-ticket-main">
                                     <h4><%= event.title %></h4>
@@ -42,6 +52,11 @@
                                         <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %>
                                         at <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
                                     </p>
+                                    <p class="text-muted mb-1" style="font-size: 0.8rem;">
+                                        Created <%= new Date(event.created_at).toLocaleDateString('en-GB') %>
+                                        &middot; Published <%= new Date(event.published_at).toLocaleDateString('en-GB') %>
+                                    </p>
+                                    <p class="text-muted mb-2" style="font-size: 0.8rem;"><%- ticketSummary %> tickets</p>
                                     <div>
                                         <span class="badge-stamp published">Published</span>
                                     </div>
@@ -72,6 +87,14 @@
                 <% if (draftEvents && draftEvents.length > 0) { %>
                     <div class="event-grid">
                         <% draftEvents.forEach(event => { %>
+                            <%
+                                const draftTicketSummary = event.ticket_info
+                                    ? event.ticket_info.split(', ').map(pair => {
+                                        const [type, qty] = pair.split(':');
+                                        return `${type.charAt(0).toUpperCase() + type.slice(1)}: ${qty}`;
+                                    }).join(' &middot; ')
+                                    : 'No tickets configured';
+                            %>
                             <div class="card-ticket-stub">
                                 <a href="<%= `/organiser/event/${event.event_id}` %>" class="card-ticket-main">
                                     <h4><%= event.title %></h4>
@@ -79,6 +102,10 @@
                                         <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %>
                                         at <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
                                     </p>
+                                    <p class="text-muted mb-1" style="font-size: 0.8rem;">
+                                        Created <%= new Date(event.created_at).toLocaleDateString('en-GB') %>
+                                    </p>
+                                    <p class="text-muted mb-2" style="font-size: 0.8rem;"><%- draftTicketSummary %> tickets</p>
                                     <div>
                                         <span class="badge-stamp draft">Draft</span>
                                     </div>

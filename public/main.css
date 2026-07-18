@@ -161,6 +161,19 @@ button {
   margin-bottom: 2.5rem;
 }
 
+/* Small eyebrow heading identifying which required page this is
+   (Organiser Home Page / Attendee Event Page / etc.) — a genuine
+   heading element, kept visually quiet since the page title below it
+   is the primary visual anchor */
+.page-kicker {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #999;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+}
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;
