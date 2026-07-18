@@ -756,28 +756,16 @@ button {
 
 .card-ticket-stub {
   background: white;
-  border: none;
-  border-radius: 0;
+  border: 1px solid #F0F0F0;
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   padding: 0;
   margin-bottom: 0;
   height: 100%;
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
-  justify-content: space-between;
-  align-items: stretch;
+  flex-direction: column;
   overflow: hidden;
-
-  /* Perforation effect along edges */
-  background-image:
-    repeating-radial-gradient(circle at 0 0, transparent 0, transparent 8px, rgba(184, 196, 188, 0.3) 8px, rgba(184, 196, 188, 0.3) 16px),
-    repeating-radial-gradient(circle at 0 100%, transparent 0, transparent 8px, rgba(184, 196, 188, 0.3) 8px, rgba(184, 196, 188, 0.3) 16px),
-    repeating-radial-gradient(circle at 100% 0, transparent 0, transparent 8px, rgba(184, 196, 188, 0.3) 8px, rgba(184, 196, 188, 0.3) 16px),
-    repeating-radial-gradient(circle at 100% 100%, transparent 0, transparent 8px, rgba(184, 196, 188, 0.3) 8px, rgba(184, 196, 188, 0.3) 16px),
-    linear-gradient(white, white);
-  background-size: 20px 20px, 20px 20px, 20px 20px, 20px 20px, 100% 100%;
-  background-position: 0 0, 0 100%, 100% 0, 100% 100%;
-  background-repeat: repeat-x, repeat-x, repeat-x, repeat-x;
 }
 
 .card-ticket-stub:hover {
@@ -785,41 +773,49 @@ button {
   transform: translateY(-2px);
 }
 
-/* Main ticket content (left side) */
+/* Main event content (top section) */
 .card-ticket-main {
   flex: 1 1 auto;
-  padding: 1.5rem;
-  border-right: 2px dashed var(--color-border);
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-right: none;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   min-width: 0;
 }
 
 .card-ticket-main h4,
 .card-ticket-main h5 {
   margin-bottom: 0.5rem;
-  font-size: 1.25rem;
+  font-size: 1.2rem;
 }
 
 .card-ticket-main p {
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   font-size: 0.9rem;
 }
 
-/* Ticket stub (right side) — compact stub section */
+/* Actions row (bottom section, full width) */
 .card-ticket-stub-section {
   flex: 0 0 auto;
-  width: 170px;
-  padding: 1.5rem 1rem;
+  width: auto;
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-direction: row;
+  justify-content: flex-start;
   align-items: center;
-  text-align: center;
-  background-color: rgba(92, 122, 107, 0.03);
-  gap: 0.75rem;
-  margin-left: auto;
+  text-align: left;
+  background-color: transparent;
+  gap: 0.6rem;
+  margin-left: 0;
+  border-top: 1px solid #F0F0F0;
+  margin-top: 0.75rem;
+  padding-top: 1rem;
+}
+
+.card-ticket-stub-section .btn,
+.card-ticket-stub-section form {
+  flex: 1 1 auto;
 }
 
 .ticket-type-row {
