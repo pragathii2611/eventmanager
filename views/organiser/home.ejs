@@ -35,28 +35,26 @@
                 <% if (publishedEvents && publishedEvents.length > 0) { %>
                     <div class="event-grid">
                         <% publishedEvents.forEach(event => { %>
-                            <a href="<%= `/organiser/event/${event.event_id}/guests` %>" style="text-decoration: none; color: inherit; display: block; height: 100%;">
-                                <div class="card-ticket-stub">
-                                    <div class="card-ticket-main">
-                                        <h4><%= event.title %></h4>
-                                        <p class="text-muted mb-2">
-                                            <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %>
-                                            at <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
-                                        </p>
-                                        <div>
-                                            <span class="badge-stamp published">Published</span>
-                                        </div>
+                            <div class="card-ticket-stub">
+                                <a href="<%= `/organiser/event/${event.event_id}/guests` %>" class="card-ticket-main">
+                                    <h4><%= event.title %></h4>
+                                    <p class="text-muted mb-2">
+                                        <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %>
+                                        at <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
+                                    </p>
+                                    <div>
+                                        <span class="badge-stamp published">Published</span>
                                     </div>
-                                    <div class="card-ticket-stub-section">
-                                        <div style="display: flex; flex-direction: row; gap: 0.6rem; width: 100%;">
-                                            <a href="<%= `/attendee/event/${event.event_id}` %>" class="btn btn-sm btn-secondary-custom" target="_blank">Share Link</a>
-                                            <form method="POST" action="<%= `/organiser/event/${event.event_id}/delete` %>" style="margin: 0; width: 100%;">
-                                                <button type="submit" class="btn btn-sm btn-danger-custom w-100" onclick="return confirm('Delete this event? This cannot be undone.')">Delete</button>
-                                            </form>
-                                        </div>
+                                </a>
+                                <div class="card-ticket-stub-section">
+                                    <div style="display: flex; flex-direction: row; gap: 0.6rem; width: 100%;">
+                                        <a href="<%= `/attendee/event/${event.event_id}` %>" class="btn btn-sm btn-secondary-custom" target="_blank">Share Link</a>
+                                        <form method="POST" action="<%= `/organiser/event/${event.event_id}/delete` %>" style="margin: 0; width: 100%;">
+                                            <button type="submit" class="btn btn-sm btn-danger-custom w-100" onclick="return confirm('Delete this event? This cannot be undone.')">Delete</button>
+                                        </form>
                                     </div>
                                 </div>
-                            </a>
+                            </div>
                         <% }); %>
                     </div>
                 <% } else { %>
@@ -74,30 +72,28 @@
                 <% if (draftEvents && draftEvents.length > 0) { %>
                     <div class="event-grid">
                         <% draftEvents.forEach(event => { %>
-                            <a href="<%= `/organiser/event/${event.event_id}` %>" style="text-decoration: none; color: inherit; display: block; height: 100%;">
-                                <div class="card-ticket-stub">
-                                    <div class="card-ticket-main">
-                                        <h4><%= event.title %></h4>
-                                        <p class="text-muted mb-2">
-                                            <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %>
-                                            at <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
-                                        </p>
-                                        <div>
-                                            <span class="badge-stamp draft">Draft</span>
-                                        </div>
+                            <div class="card-ticket-stub">
+                                <a href="<%= `/organiser/event/${event.event_id}` %>" class="card-ticket-main">
+                                    <h4><%= event.title %></h4>
+                                    <p class="text-muted mb-2">
+                                        <%= new Date(event.event_date).toLocaleDateString('en-GB', { weekday: 'short', month: 'short', day: 'numeric' }) %>
+                                        at <%= new Date(event.event_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) %>
+                                    </p>
+                                    <div>
+                                        <span class="badge-stamp draft">Draft</span>
                                     </div>
-                                    <div class="card-ticket-stub-section">
-                                        <div style="display: flex; flex-direction: row; gap: 0.6rem; width: 100%;">
-                                            <form method="POST" action="<%= `/organiser/event/${event.event_id}/publish` %>" style="margin: 0; width: 100%;">
-                                                <button type="submit" class="btn btn-sm btn-primary-custom w-100">Publish</button>
-                                            </form>
-                                            <form method="POST" action="<%= `/organiser/event/${event.event_id}/delete` %>" style="margin: 0; width: 100%;">
-                                                <button type="submit" class="btn btn-sm btn-danger-custom w-100" onclick="return confirm('Delete this draft event? This cannot be undone.')">Delete</button>
-                                            </form>
-                                        </div>
+                                </a>
+                                <div class="card-ticket-stub-section">
+                                    <div style="display: flex; flex-direction: row; gap: 0.6rem; width: 100%;">
+                                        <form method="POST" action="<%= `/organiser/event/${event.event_id}/publish` %>" style="margin: 0; width: 100%;">
+                                            <button type="submit" class="btn btn-sm btn-primary-custom w-100">Publish</button>
+                                        </form>
+                                        <form method="POST" action="<%= `/organiser/event/${event.event_id}/delete` %>" style="margin: 0; width: 100%;">
+                                            <button type="submit" class="btn btn-sm btn-danger-custom w-100" onclick="return confirm('Delete this draft event? This cannot be undone.')">Delete</button>
+                                        </form>
                                     </div>
                                 </div>
-                            </a>
+                            </div>
                         <% }); %>
                     </div>
                 <% } else { %>

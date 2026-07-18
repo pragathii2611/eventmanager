@@ -773,7 +773,9 @@ button {
   transform: translateY(-2px);
 }
 
-/* Main event content (top section) */
+/* Main event content (top section) — rendered as an <a> so the info
+   area is clickable, while the actions row below stays outside the link
+   (nesting <a> inside <a> is invalid HTML and breaks the grid layout) */
 .card-ticket-main {
   flex: 1 1 auto;
   padding: 1.5rem 1.5rem 1rem 1.5rem;
@@ -782,6 +784,17 @@ button {
   flex-direction: column;
   justify-content: flex-start;
   min-width: 0;
+  color: var(--color-text);
+}
+
+a.card-ticket-main,
+a.card-ticket-main:hover {
+  color: var(--color-text);
+  text-shadow: none;
+}
+
+a.card-ticket-main:hover h4 {
+  color: var(--color-primary-hover);
 }
 
 .card-ticket-main h4,
