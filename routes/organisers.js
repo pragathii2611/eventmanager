@@ -489,7 +489,6 @@ router.get('/event/:id/guests', authRequired, (req, res, next) => {
 
             res.render('organiser/guests', {
                 event: event,
-                event_id: eventId,
                 activeBookings: activeBookings,
                 cancelledBookings: cancelledBookings
             });

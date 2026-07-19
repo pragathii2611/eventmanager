@@ -16,6 +16,7 @@ database.db-shm
 # IDE
 .vscode/
 .idea/
+.claude/
 *.swp
 *.swo
 *~

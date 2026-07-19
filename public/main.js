@@ -46,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
       if (submitBtn) {
         const originalText = submitBtn.textContent;
-        const originalHTML = submitBtn.innerHTML;
 
         // Pick a loading message that matches what the button says
         let loadingText = 'Saving...';
