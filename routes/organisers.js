@@ -215,12 +215,14 @@ router.post('/settings', authRequired, (req, res, next) => {
 
 /**
  * Creates a new blank draft event and sends the organiser straight to
- * its edit page so they can fill in the details.
+ * its edit page so they can fill in the details. This is a POST (not
+ * GET) because it changes data - a GET request should never create or
+ * modify anything in the database.
  * Inputs: none
  * Outputs: a new draft event is created (with a default date of
  *          tomorrow at 18:00) and the organiser is redirected to its edit page
  */
-router.get('/event/new', authRequired, (req, res, next) => {
+router.post('/event/new', authRequired, (req, res, next) => {
     // Default date for a brand new event: tomorrow at 6pm
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
