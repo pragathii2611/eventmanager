@@ -268,8 +268,11 @@
         // <%= %>, since EJS's default HTML-escaping would turn the JSON's
         // double quotes into &#34;, which is invalid JS and would silently
         // kill this whole script block. The route already replaced "<"
-        // with its unicode escape, so an event title containing
-        // "</script>" can't break out of this tag either.
+        // with its unicode escape, so an event title containing a
+        // closing script tag can't break out of this block either.
+        // (Note: do not write that literal tag text in this comment -
+        // the HTML parser looks for it before any JS/comment parsing
+        // happens, and will truncate this whole <script> block early.)
         const chartData = <%- chartDataJSON %>;
         const revenueCtx = document.getElementById('revenueChart');
         if (revenueCtx && chartData.labels.length > 0) {
